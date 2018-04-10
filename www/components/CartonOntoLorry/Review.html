@@ -1,0 +1,137 @@
+<style>
+    .grid {
+        font-size: 10px;
+    }
+</style>
+<div data-role="view" data-reload="true" data-title="Review" data-layout="main" data-model="app.home" data-show="startup" data-after-show="afterstartup">
+    <div id="homeModel" class="form-view">
+        <form>
+            <div>
+            </div>
+            <div id="example">
+                <div class="grid" id="grid"></div>
+            </div>
+            <div class="button-group" style="width:50%; float:right;">
+                <a style="font-size:13px;color:black;" id="btnEnter" data-reload="true" data-role="button" href="components/CartonOntoLorry/carton.html"><b>Back</b></a>
+            </div>
+            <audio id="errorbeep" src="errorbeep.wav" preload="auto"></audio>
+        </form>
+        <!-- START_CUSTOM_CODE_homeModel -->
+        <!-- Add custom code here. For more information about custom code, see http://docs.telerik.com/platform/screenbuilder/troubleshooting/how-to-keep-custom-code-changes -->
+        <!-- END_CUSTOM_CODE_homeModel -->
+    </div>
+    <!-- START_CUSTOM_CODE_formPutAwayUpdModel -->
+    <script>
+        var erroraudio = document.getElementById("errorbeep");
+        function afterstartup() {
+            
+            if (gcShipmentNo !== "") {
+              
+                $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/getmfglines",
+                    url: csite + "/mfgshipment/rest/mfgshipment/getmfglines",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    dataType: 'json',
+                    data: {
+                        "EntityWip": gcEntityWip,
+                        "ShipmentNo": gcShipmentNo
+                    },
+                    success: function (json) {
+
+                        //$("#grid1").data("kendoGrid").dataSource.data(testdata);
+
+                        console.log(json);
+                    },
+                    async: false,
+                    timeout: 1000,
+                    error: function (request, error) {
+                        if (error == "timeout") {
+                            //send request again
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+					var ii;
+   					var numrecs = (response.ttMfgShipmentLine[0].ttNumber);
+                    var reviewdata;
+                       reviewdata = [{
+                            ShipNo: (response.ttMfgShipmentLine[0].MfgShipmentNo),
+                            JobNumber: (response.ttMfgShipmentLine[0].JobNumber),
+                            ItemCode: (response.ttMfgShipmentLine[0].ItemCode),
+                           	NoCartons: (response.ttMfgShipmentLine[0].NoOfCartons),
+                           	QtyShip: (response.ttMfgShipmentLine[0].QuantityShipped)
+                         },
+                         ];
+
+                    var dataSource = new kendo.data.DataSource({
+                        data: reviewdata
+                    });
+
+                    dataSource.fetch();
+
+                    $("#grid").kendoGrid({
+                        dataSource: reviewdata,
+                        scrollable: false,
+                        resizable: true
+                    });
+
+                    for (ii = 1; ii < numrecs; ii++) {
+                        $("#grid").getKendoGrid().dataSource.add({
+                            ShipNo: (response.ttMfgShipmentLine[ii].MfgShipmentNo),
+                            JobNumber: (response.ttMfgShipmentLine[ii].JobNumber),
+                            ItemCode: (response.ttMfgShipmentLine[ii].ItemCode),
+                           	NoCartons: (response.ttMfgShipmentLine[ii].NoOfCartons),
+                           	QtyShip: (response.ttMfgShipmentLine[ii].QuantityShipped)
+                        });
+                    }
+                });
+            }
+        }
+    </script>
+    <style>
+        .km-nova .km-popup .k-item,
+        .km-nova .km-actionsheet>li>a {
+            font-size: 10px;
+            color: black;
+        }
+        .k-textbox>input,
+        .k-autocomplete .k-input,
+        .k-picker-wrap .k-input,
+        .k-numeric-wrap .k-input,
+        .k-dropdown-wrap .k-input,
+        .k-selectbox .k-input {
+            font-size: 10px;
+            color: black;
+        }
+        .k-grid-header-wrap,
+        .k-grid .k-grouping-header,
+        .k-grid-header,
+        .k-pager-wrap,
+        .k-pager-wrap .k-textbox,
+        .k-pager-wrap .k-link,
+        .k-grouping-header .k-group-indicator,
+        .k-gantt-toolbar .k-state-default {
+            width: 100%;
+        }
+        .k-picker-wrap .k-select,
+        .k-numeric-wrap .k-select,
+        .k-dropdown-wrap .k-select {
+            line-height: 1.25en;
+        }
+        .k-pager-wrap>.k-link {
+            float: none;
+        }
+    </style>
+    <!-- END_CUSTOM_CODE_formPutAwayUpdModel -->
+    <!-- START_CUSTOM_CODE_formPutAwayUpd -->
+    <!-- END_CUSTOM_CODE_formPutAwayUpd -->
+</div>

@@ -1,0 +1,38 @@
+{
+  "type": "kendo-ui-mobile",
+  "views": [
+    {
+      "type": "kendo-ui-mobile:view",
+      "name": "home",
+      "components": [
+        {
+          "type": "kendo-ui-mobile:form",
+          "components": [
+            {
+              "type": "kendo-ui-mobile:field",
+              "name": "fiCarton",
+              "title": "Carton",
+              "inputType": "text",
+              "titlePosition": "left"
+            }
+          ],
+          "name": "homeModel",
+          "cancelButton": "Exit"
+        }
+      ],
+      "title": "Box Contents",
+      "addToNavigation": true,
+      "icon": "home"
+    }
+  ],
+  "dataProviders": [],
+  "name": "kendoUiMobileApp",
+  "navigation": "tabstrip",
+  "view": "home",
+  "transition": "slide",
+  "showMoreTab": false,
+  "skin": "nova",
+  "skinMainColor": "#32364c",
+  "skinTextColor": "#ffffff",
+  "skinAccentColor": "#ff4350"
+}

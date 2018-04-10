@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    
+    
+    
+    <!--<link rel="stylesheet" href="styles/kendo.common.min.css">
+    <link rel="stylesheet" href="styles/kendo.flat.min.css">
+    <!-- -->
+   <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    
+    <link href="bower_components/kendo-ui-appbuilder-core/styles/kendo.mobile.all.min.css" rel="stylesheet">
+    <link href="styles/kendo.mobile.all.min.css" rel="stylesheet">
+    <link href="styles/main.css" rel="stylesheet">
+
+    <script src="cordova.js"></script>
+    <script src="bower_components/kendo-ui-appbuilder-core/js/jquery.min.js"></script>
+    <script src="bower_components/kendo-ui-appbuilder-core/js/kendo.mobile.min.js"></script>
+    <script src="bower_components/everlive/min/everlive.all.min.js"></script>
+    <script src="lib/progress/progress.all.min.js"></script>
+    
+    <script src="scripts/jsdoTransport.js"></script>
+    <script src="app.js"></script>-->
+    
+    
+    <!--<script src="http://cdn.kendostatic.com/2014.3.1316/js/jquery.min.js"></script>
+    <script src="http://cdn.kendostatic.com/2014.3.1316/js/kendo.all.min.js"></script>
+    <script src="http://oemobiledemo.progress.com/jsdo/progress.jsdo.3.1.js"></script>-->
+    
+    <!--<script src="scripts/jquery.min.js"></script>
+    <script src="scripts/kendo.all.min.js"></script>
+    <script src="scripts/progress.jsdo.3.1.js"></script>-->
+    
+    
+    <!--<script src="scripts/kendo.mobile.min.js"></script>-->
+    
+        <!--<link rel="stylesheet" type="text/css" href="http://w2ui.com/src/w2ui-1.4.2.min.css" />-->
+              <!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <script type="text/javascript" src="http://w2ui.com/src/w2ui-1.4.2.min.js"></script>-->
+    
+   <link rel="stylesheet" href="kendo/styles/kendocommonmin.css" />
+    <link rel="stylesheet" href="kendo/styles/kendodefaultmin.css" />
+    <link href="kendo/styles/kendo.mobile.all.min.css" rel="stylesheet">
+    <link href="styles/overrides.css" rel="stylesheet">
+    <link href="styles/main.css" rel="stylesheet">
+    
+    <script src="cordova.js"></script>
+    <script src="kendo/js/jquery.min.js"></script>
+    <script src="kendo/js/kendo.mobile.min.js"></script>
+    <script src="kendo/js/jsdoTransport.js"></script>
+    <script src="kendo/js/index.js"></script>
+    <script src="app.js"></script>
+    <script src="kendo/js/jquerymin.js"></script>
+    <script src="kendo/js/kendoallmin.js"></script>
+    <script src="kendo/js/progressjsdo.js"></script>
+    <!--<script type="text/javascript" charset="utf-8" src="cordova-1.7.0.js"></script>
+    <script src="http://cdn.kendostatic.com/2014.3.1316/js/jquery.min.js"></script>
+    <script src="http://cdn.kendostatic.com/2014.3.1316/js/kendo.all.min.js"></script>-->
+
+    <style>
+        html {
+            font-size: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        
+    </style>
+</head>
+
+<body id="kendoUiMobileApp">
+    <script src="components/home/index.js"></script>
+    <div data-role="layout" data-id="main">
+        <header data-role="header">
+            <div data-role="navbar">
+                <span data-role="view-title"></span>
+            </div>
+        </header>
+       <!-- <footer data-role="footer">
+            <div data-role="tabstrip" id="navigation-container">
+                <a data-icon="home" style="font-size:small;" onClick="menuclicked()">
+                <span class="km-text" >Menu</span>
+                </a>
+                
+                <a data-icon="action" style="font-size:small;" onClick="logoutuser()">
+                 <span class="km-text" >Logout</span>
+                </a>
+            </div>
+        </footer>-->
+    </div>
+    <div data-role="layout" data-id="main-nonav">
+        <header data-role="header">
+            <div data-role="navbar">
+                <span data-role="view-title"></span>
+            </div>
+        </header>
+        <footer data-role="footer">
+        </footer>
+    </div>
+    <script>
+    function logoutuser() {
+        gcLoginSuccess = "";
+        gcInEntity = "";
+        gcUsername = "";
+        gcEntityWip = "";
+        gcActive = "";
+        kendo.mobile.application.navigate("components/home/view.html");
+    }
+    function menuclicked() {     
+        
+          if(gcLoginSuccess == "") {
+          }
+        else {
+            kendo.mobile.application.navigate("components/menu/menu.html");
+        }
+     }
+    </script>
+</body>
+
+</html>

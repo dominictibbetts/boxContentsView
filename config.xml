@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="com.telerik.BoxContentsView" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>boxContentsView</name>
+  <description>
+       The Box Contents View Mobile Application
+    </description>
+  <author email="danielle.gunn@syscom.plc.uk" href="http://cordova.io">
+        Syscom Team
+    </author>
+  <content src="index.html" />
+  <plugin name="cordova-plugin-whitelist" spec="1" />
+  <access origin="*" />
+  <allow-intent href="http://*/*" />
+  <allow-intent href="https://*/*" />
+  <allow-intent href="tel:*" />
+  <allow-intent href="sms:*" />
+  <allow-intent href="mailto:*" />
+  <allow-intent href="geo:*" />
+  <platform name="android">
+    <allow-intent href="market:*" />
+    <preference name="splashscreen" value="splashscreen" />
+    <preference name="splashScreenDelay" value="10000" />
+  </platform>
+  <platform name="ios">
+    <allow-intent href="itms:*" />
+    <allow-intent href="itms-apps:*" />
+  </platform>
+  <engine name="android" spec="^6.1.0" />
+  <vs:toolsetVersion xmlns:vs="http://schemas.microsoft.com/appx/2014/htmlapps">6.3.1</vs:toolsetVersion>
+  <engine name="android" spec="5.2.1" />
+  <engine name="ios" spec="4.2.0" />
+  <engine name="windows" spec="4.4.2" />
+  <preference name="windows-target-version" value="10.0" />
+</widget>

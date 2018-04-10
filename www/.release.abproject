@@ -1,0 +1,32 @@
+{
+  "CorePlugins": [
+    "cordova-plugin-battery-status",
+    "cordova-plugin-camera",
+    "cordova-plugin-contacts",
+    "cordova-plugin-device",
+    "cordova-plugin-device-motion",
+    "cordova-plugin-device-orientation",
+    "cordova-plugin-dialogs",
+    "cordova-plugin-file",
+    "cordova-plugin-file-transfer",
+    "cordova-plugin-geolocation",
+    "cordova-plugin-globalization",
+    "cordova-plugin-inappbrowser",
+    "cordova-plugin-media",
+    "cordova-plugin-media-capture",
+    "cordova-plugin-network-information",
+    "cordova-plugin-splashscreen",
+    "cordova-plugin-statusbar",
+    "cordova-plugin-vibration",
+    "cordova-plugin-whitelist",
+    "com.telerik.plugin.telerikanalytics@3.4.1",
+    "cordova-plugin-crosswalk-webview@2.2.0"
+  ],
+  "CordovaPluginVariables": {
+    "com.telerik.plugin.telerikanalytics": {
+      "AUTO_TRACK_EXCEPTIONS": "True",
+      "AUTO_TRACK_KENDO_EVENTS": "True",
+      "PRODUCT_ID": "af2474a1bcce48c2a4f7810c705e905f"
+    }
+  }
+}

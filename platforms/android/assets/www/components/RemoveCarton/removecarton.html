@@ -1,0 +1,530 @@
+<div data-role="view" data-reload="true" data-title="Remove Carton from Shipment" data-layout="main" data-model="app.home" data-show="startup" data-after-show="afterstartup">
+    <div id="homeModel" class="form-view">
+        <form>
+            <br>
+            <div id="idshipment" style="padding-left:40px;">
+                <span style="padding-right:10px;font-size:13px;color:black;"><b>Shipment</b></span>
+                <input id="shipmentremove" style="padding-left:1px;font-size:13px; border:solid; border-width:1px; height:25px;" type="text" autofocus>
+            </div>
+            <br>
+            <hr><br>
+            <div id="column1" style="width:55%; float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Ship From</b></span>
+                <input disabled id="shipfromremove" style="padding-left:1px; color:black;font-size:11px; border:solid; border-width:1px; height:22px; width:40%;float:right;" type="text">
+            </div>
+            <div id="column2" style="width:45%;float:right;padding-left:5px;padding-right:5px;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Ship To</b></span>
+                <input disabled id="shiptoremove" style="padding-left:1px;font-size:11px; color:black; border:solid; border-width:1px; height:22px;width:55%;float:right;" type="text">
+            </div>
+            <br>
+            <div id="column3" style="width:55%;float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Plan Ship Date</b></span>
+                <input disabled id="planshipremove" style="padding-left:1px;font-size:11px; color:black; border:solid; border-width:1px; height:22px;width:40%;float:right;" type="text">
+            </div>
+            <br><br><br>
+            <hr>
+            <div id="idcartonremove" style="width:72%; float:left; display:none;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Carton</b></span>
+                <input id="cartonremove" style="padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px; width:55%;float:right;" type="text">
+            </div>
+            <div class="button-group">
+                <a style="font-size:13px;color:black;" data-role="button" onClick="cancelbuttton()"><b>Exit</b></a>
+                <a style="font-size:13px;color:black;" id="btnRemove" data-role="button" onClick="RemoveAll()"><b>Remove All</b></a>
+            </div>
+            <!--Errors-->
+            <div id="win5">
+                <!--<input id="errormsg5" readonly style="border:none;font-size:14px;width:100%;" type="text"></input>-->
+                <textarea name="errormsg5" id="errormsg5" style="resize: none;border:none;font-size:14px;font-family: Arial, Helvetica, sans-serif;width:100%; "></textarea>
+                <br>
+                <button type="button" id="btnClose5" style="display:none;width:100%;height:40px;">Ok</button>
+                <button type="button" id="btnYes5" style="display:none;width:100%;height:40px;">Yes</button>
+                <button type="button" id="btnRemove5" style="display:none;width:100%;height:40px;">Yes</button>
+                <input type="password" id="inputpassword" style="display:none;width:100%;height:40px;"></input>
+                <button type="button" id="btnYesPassword" style="display:none;width:100%;height:40px;">Ok</button>
+                <button type="button" id="btnCancelPassword" style="display:none;width:100%;height:40px;">Cancel</button>
+                <br>
+                <button type="button" id="btnNo5" style="display:none;width:100%;height:40px;">No</button>
+            </div>
+            <!--Remove carton with yes no buttons-->
+            <audio id="errorbeep" src="errorbeep.wav" preload="auto"></audio>
+        </form>
+    </div>
+    <!-- START_CUSTOM_CODE_formPutAwayUpdModel -->
+    <script>
+        var erroraudio = document.getElementById("errorbeep");
+    
+        $("#win5").kendoWindow({
+            width: "300px",
+            height: "175px",
+            modal: true,
+            visible: false
+        });
+        $("#open1").click(function () {
+            $("#win5").data("kendoWindow").open();
+        });
+        $("#btnClose5").click(function () {
+            $("#win5").data("kendoWindow").close();
+            document.getElementById("shipmentremove").focus();
+        });
+        $("#btnYes5").click(function () {
+            $("#win5").data("kendoWindow").close();
+            document.getElementById("shipmentremove").focus();
+            RemoveYes();
+        });
+        $("#btnNo5").click(function () {
+            $("#win5").data("kendoWindow").close();
+            document.getElementById("shipmentremove").focus();
+            RemoveNo();
+        });
+        $("#btnRemove5").click(function () {
+            $("#win5").data("kendoWindow").close();
+            yesremoveall();
+        });
+        $("#btnYesPassword").click(function () {
+            $("#win5").data("kendoWindow").close();
+
+            if (document.getElementById("inputpassword").value == gcRemoveAllPassword)
+            {
+                    DoRemoveAll();
+                    document.getElementById("cartonremove").focus();
+            }
+            else
+            {
+                PasswordIncorrectMessage();
+            }
+            
+
+        });
+        $("#btnCancelPassword").click(function () {
+            $("#win5").data("kendoWindow").close();
+            document.getElementById("cartonremove").focus();
+        });        
+        $('#inputpassword').keypress(function (event) {
+            var keycode = (event.keyCode ? event.keyCode : event.which);
+            if (keycode == '13') {
+                $("#win5").data("kendoWindow").close();
+
+                if (document.getElementById("inputpassword").value == gcRemoveAllPassword)
+                {
+                        DoRemoveAll();
+                        document.getElementById("cartonremove").focus();
+                }
+                else
+                {
+                    PasswordIncorrectMessage();
+                }
+                
+            }
+        });        
+
+        /*var serviceURI = "http://spectre.int.syscom.plc.uk:8980/BoxContentsViewService",
+            catalogURI = serviceURI + "/static/BoxContentsViewService.json";*/
+        var serviceURI = "http://snowball.eveden.local:8980/WacoalWTLMobileService",
+            catalogURI = serviceURI + "/static/WacoalWTLMobileService.json";
+        var ccartondata;
+        var cshipmentdata;
+        gcShipmentNo = "";
+        document.getElementById("shipmentremove").focus();
+
+        function afterstartup() {
+            document.getElementById("shipmentremove").focus();
+        }
+
+        function startup() {
+            $('#shipmentremove').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    event.preventDefault();
+                    var getcarton = document.getElementById("shipmentremove").value;
+                    if (getcarton == '') {
+                        erroraudio.play();
+                        document.getElementById("shipmentremove").value = "";
+                        document.getElementById("shipmentremove").focus();
+                        document.getElementById("errormsg5").value = "A Shipment must be entered";
+                        document.getElementById("btnYes5").style.display = 'none';
+                        document.getElementById("btnNo5").style.display = 'none';
+                        document.getElementById("inputpassword").style.display = 'none';
+                        document.getElementById("btnYesPassword").style.display = 'none';
+                        document.getElementById("btnCancelPassword").style.display = 'none';
+                        document.getElementById("btnClose5").style.display = 'block';
+                        $("#win5").data("kendoWindow").open();
+                        document.getElementById("shipmentremove").focus();
+                    } else {
+                        ShowShipmentDetails();
+                    }
+                }
+            });
+            $('#cartonremove').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    //document.getElementById("popup").style.display = 'block';
+                    //Popup question                     
+                    var ccarton = document.getElementById("cartonremove").value;
+                    if (ccarton == '') {
+                        erroraudio.play();
+                        document.getElementById("errormsg5").value = "A Carton must be entered";
+                        document.getElementById("btnYes5").style.display = 'none';
+                        document.getElementById("btnNo5").style.display = 'none';
+                        document.getElementById("btnRemove5").style.display = 'none';
+                        document.getElementById("inputpassword").style.display = 'none';
+                        document.getElementById("btnYesPassword").style.display = 'none';
+                        document.getElementById("btnCancelPassword").style.display = 'none';
+                        document.getElementById("btnClose5").style.display = 'block';
+                        $("#win5").data("kendoWindow").open();
+                    } else {
+						
+                        document.getElementById("errormsg5").value = "Remove carton from shipment?";
+                        document.getElementById("btnYes5").style.display = 'block';
+                        document.getElementById("btnNo5").style.display = 'block';
+                        document.getElementById("btnRemove5").style.display = 'none';
+                        document.getElementById("btnClose5").style.display = 'none';
+                        document.getElementById("inputpassword").style.display = 'none';
+                        document.getElementById("btnYesPassword").style.display = 'none';
+                        document.getElementById("btnCancelPassword").style.display = 'none';
+                        $("#win5").data("kendoWindow").open();
+
+                    }
+                }
+            });
+        }
+
+        function RemoveYes() {
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/getcartondetails",
+                    url: csite + "/mfgshipment/rest/mfgshipment/getcartondetails",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    dataType: 'json',
+                    data: {
+                        "EntityWip": gcEntityWip,
+                        "CartonNo": document.getElementById("cartonremove").value
+                    },
+                    success: function (json) {
+
+                        //$("#grid1").data("kendoGrid").dataSource.data(testdata);
+
+                        console.log(json);
+                    },
+                    async: false,
+                    timeout: 1000,
+                    error: function (request, error) {
+                        if (error == "timeout") {
+                            //send request again
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+                    var cartoncreated = (response.ttMfgCarton[0].RecordCreated);
+
+                    if (cartoncreated == "N") {
+                        erroraudio.play();
+                        var cerror = "Carton '" + document.getElementById("cartonremove").value + "' cannot be found";
+                        document.getElementById("cartonremove").value.value = "";
+                        document.getElementById("errormsg5").value = cerror;
+                        document.getElementById("btnYes5").style.display = 'none';
+                        document.getElementById("btnNo5").style.display = 'none';
+                        document.getElementById("btnRemove5").style.display = 'none';
+                        document.getElementById("inputpassword").style.display = 'none';
+                        document.getElementById("btnYesPassword").style.display = 'none';
+                        document.getElementById("btnCancelPassword").style.display = 'none';
+                        document.getElementById("btnClose5").style.display = 'block';
+                        $("#win5").data("kendoWindow").open();
+                       
+                        document.getElementById("cartonremove").value.value = "";
+                        document.getElementById("cartonremove").focus();
+                        
+                        RemoveNo();
+                    } else {
+                        /*put the carton onto lorry*/
+                        onAfterFillCartonNo();
+                    }
+
+                });
+            /*ccartondata = "";
+            var ccartonno = document.getElementById("cartonremove").value;
+            var cFilter = "where MfgCarton.EntityWip = '" + gcEntityWip + "'" + " and MfgCarton.MfgCartonNo = '" + ccartonno + "'" + " and MfgCarton.MfgShipmentNo = '" + document.getElementById("shipmentremove").value + "'";
+            var cartonresourceName = 'MfgCarton';
+            ccartondata = new JSDOTransport(serviceURI, catalogURI, cartonresourceName, "", cFilter);
+            ccartondata.jsdo.subscribe('AfterFill', onAfterFillCartonNo, this);
+            ccartondata.jsdo.fill(cFilter);*/
+        }
+
+        function RemoveNo() {
+            document.getElementById("cartonremove").value = "";
+            document.getElementById("cartonremove").focus();
+        }
+
+        function onAfterFillCartonNo() {
+
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/removecarton",
+                    url: csite + "/mfgshipment/rest/mfgshipment/removecarton",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    data: {
+                        "InEntity": gcInEntity,
+                        "EntityWip": gcEntityWip,
+                        "ShipmentNo": document.getElementById("shipmentremove").value,
+                        "CartonNo": document.getElementById("cartonremove").value,
+                        "RemoveAll": false,
+                        "UserId": gcUsername
+                    },
+                    success: function (json) {
+                        console.log(json);
+                    },
+                    async: false,
+                    //timeout: 1000,
+                    error: function (request, error) {
+                        if (error == "timeout") {
+                            //send request again
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+                    // Get the global variables
+
+                    var ttError = (response.ttError[0].ErrorMsg);
+
+                    if (ttError !== "") {
+
+                        erroraudio.play();
+                        document.getElementById("cartonremove").value.value = "";
+                        document.getElementById("errormsg5").value = ttError;
+                        document.getElementById("btnYes5").style.display = 'none';
+                        document.getElementById("btnNo5").style.display = 'none';
+                        document.getElementById("btnRemove5").style.display = 'none';
+                        document.getElementById("btnClose5").style.display = 'block';
+                        document.getElementById("inputpassword").style.display = 'none';
+                        document.getElementById("btnYesPassword").style.display = 'none';
+                        document.getElementById("btnCancelPassword").style.display = 'none';
+                        $("#win5").data("kendoWindow").open();
+                        document.getElementById("cartonremove").focus();        
+                             
+                    }
+
+                    document.getElementById("cartonremove").value = "";
+                    document.getElementById("cartonremove").focus();
+                    
+                    RemoveNo();
+                });
+        }
+
+        function ShowShipmentDetails() {
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/getshipmentdetails",
+                    url: csite + "/mfgshipment/rest/mfgshipment/getshipmentdetails",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    dataType: 'json',
+                    data: {
+                        "EntityWip": gcEntityWip,
+                        "ShipmentNo": document.getElementById("shipmentremove").value
+                    },
+                    success: function (json) {
+                        console.log(json);
+                    },
+                    async: false,
+                    timeout: 1000,
+                    error: function (request, error) {
+                        if (error == "timeout") {
+                            //send request again
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+
+                    var recordcreated = (response.ttMfgShipment[0].RecordCreated);
+
+                    if (recordcreated == "N") {
+                       
+                        erroraudio.play();
+                        var cerror = "Shipment '" + document.getElementById("shipmentremove").value + "' cannot be found";
+                        document.getElementById("shipmentremove").value = "";
+                        document.getElementById("shipmentremove").focus();
+                        document.getElementById("btnClose5").style.display = 'block';
+                        document.getElementById("inputpassword").style.display = 'none';
+                        document.getElementById("btnYesPassword").style.display = 'none';
+                        document.getElementById("btnCancelPassword").style.display = 'none';
+                        document.getElementById("errormsg5").value = cerror;
+                        $("#win5").data("kendoWindow").open();
+
+                    } else {
+
+                        document.getElementById("idcartonremove").style.display = 'block';
+                        document.getElementById("cartonremove").focus();
+                        gcShipmentNo = document.getElementById("shipmentremove").value;
+                        document.getElementById("shipmentremove").disabled = true;
+                        document.getElementById("shipfromremove").value = " " + (response.ttMfgShipment[0].ShipFrom);
+                        document.getElementById("shiptoremove").value = " " + (response.ttMfgShipment[0].ShipTo);
+                        document.getElementById("planshipremove").value = " " + (response.ttMfgShipment[0].PlannedShipDate);
+                    }
+                });
+        }
+
+        function onAfterFillShipment(jsdo, success, request) {
+            if (jsdo.hasData()) {
+                jsdo.find(function (MfgShipment) {
+                    document.getElementById("idcartonremove").style.display = 'block';
+                    document.getElementById("cartonremove").focus();
+                    gcShipmentNo = document.getElementById("shipmentremove").value;
+                    document.getElementById("shipmentremove").disabled = true;
+                    document.getElementById("shipfromremove").value = " " + MfgShipment.data.ShipFrom;
+                    document.getElementById("shiptoremove").value = " " + MfgShipment.data.ShipTo;
+                    document.getElementById("planshipremove").value = " " + MfgShipment.data.PlannedShipDate;
+                });
+            } else {
+                var cerror = "Shipment '" + document.getElementById("shipmentremove").value + "' cannot be found";
+                erroraudio.play();
+                document.getElementById("shipmentremove").value = "";
+                document.getElementById("shipmentremove").focus();
+                document.getElementById("errormsg5").value = cerror;
+                document.getElementById("btnYes5").style.display = 'none';
+                document.getElementById("btnNo5").style.display = 'none';
+                document.getElementById("btnClose5").style.display = 'block';
+                document.getElementById("inputpassword").style.display = 'none';
+                document.getElementById("btnYesPassword").style.display = 'none';
+                document.getElementById("btnCancelPassword").style.display = 'none';
+                $("#win5").data("kendoWindow").open();
+            }
+        }
+
+        function RemoveAll() {
+            /*In this function we need the user to enter a password to make sure they can use it gcRemoveAllPassword*/
+            /*Need to put the question and text box in a pop up and then get that value and check it against the variable*/
+
+            if(gcRemoveAllPassword != "")
+            {
+                erroraudio.play();
+                document.getElementById("errormsg5").value = "Restricted functionality, please enter password to continue";
+                document.getElementById("inputpassword").value = '';
+                document.getElementById("btnRemove5").style.display = 'none';
+                document.getElementById("btnYes5").style.display = 'none';
+                document.getElementById("btnNo5").style.display = 'none';
+                document.getElementById("btnClose5").style.display = 'none';
+                document.getElementById("inputpassword").style.display = 'block';
+                document.getElementById("btnYesPassword").style.display = 'block';
+                document.getElementById("btnCancelPassword").style.display = 'block';
+                $("#win5").data("kendoWindow").open();   
+                document.getElementById("inputpassword").focus();             
+            }
+            else
+            {
+                DoRemoveAll();
+            }
+        }
+
+        function DoRemoveAll() {
+                document.getElementById("errormsg5").value = "Remove all cartons from shipment?";
+                document.getElementById("btnRemove5").style.display = 'block';
+                document.getElementById("btnYes5").style.display = 'none';
+                document.getElementById("btnNo5").style.display = 'block';
+                document.getElementById("btnClose5").style.display = 'none';
+                document.getElementById("inputpassword").style.display = 'none';
+                document.getElementById("btnYesPassword").style.display = 'none';
+                document.getElementById("btnCancelPassword").style.display = 'none';
+                $("#win5").data("kendoWindow").open();
+        }
+
+        function PasswordIncorrectMessage() {
+                erroraudio.play();
+                document.getElementById("errormsg5").value = "Incorrect password provided";
+                document.getElementById("inputpassword").value = '';
+                document.getElementById("btnRemove5").style.display = 'none';
+                document.getElementById("btnClose5").style.display = 'block';
+                document.getElementById("btnNo5").style.display = 'none';
+                document.getElementById("inputpassword").style.display = 'none';
+                document.getElementById("btnYesPassword").style.display = 'none';
+                document.getElementById("btnCancelPassword").style.display = 'none';
+                $("#win5").data("kendoWindow").open();              
+        }
+        function yesremoveall() {
+
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/removeallcarton",
+                    url: csite + "/mfgshipment/rest/mfgshipment/removeallcarton",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    data: {
+                        "InEntity": gcInEntity,
+                        "EntityWip": gcEntityWip,
+                        "ShipmentNo": document.getElementById("shipmentremove").value,
+                        "UserId": gcUsername
+                    },
+                    success: function (json) {
+                        console.log(json);
+                    },
+                    async: false,
+                    //timeout: 1000,
+                    error: function (request, error) {
+                        if (error == "timeout") {
+
+                            //send request again
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+                    // Get the global variables
+                    document.getElementById("cartonremove").value = "";
+                    document.getElementById("cartonremove").focus();
+                });
+        }
+
+        function cancelbuttton() {
+            document.getElementById("shipmentremove").value = "";
+            document.getElementById("shipfromremove").value = "";
+            document.getElementById("shiptoremove").value = "";
+            document.getElementById("planshipremove").value = "";
+            document.getElementById("idcartonremove").style.display = 'none';
+            gcShipmentNo = "";
+            document.getElementById("shipmentremove").disabled = false;
+            kendo.mobile.application.navigate("components/menu/menu.html");
+        }
+
+        function okclickedshipment() {
+            document.getElementById("shipmentremove").value = "";
+            document.getElementById("shipmentremove").focus();
+            document.getElementById('myModal6').style.display = "none";
+        }
+
+        function okclickedcarton() {
+            document.getElementById("cartonremove").value = "";
+            document.getElementById("cartonremove").focus();
+            document.getElementById('myModal6').style.display = "none";
+        }
+    </script>
+    <!-- END_CUSTOM_CODE_formPutAwayUpdModel -->
+    <!-- START_CUSTOM_CODE_formPutAwayUpd -->
+    <!-- END_CUSTOM_CODE_formPutAwayUpd -->
+</div>

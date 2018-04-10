@@ -1,0 +1,220 @@
+<style type="text/css">
+    input[type="radio"]:checked:before {
+    content: "";
+    display: block;
+    position: relative;
+    top: 3px;
+    left: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2e3246;
+}
+
+.km-nova input[type=radio] {
+    height:1.6em;
+    width:1.6em;
+}
+
+.km-nova input[type=radio], .km-nova input[type=checkbox] {
+   
+}
+
+/*.km-nova input[type=radio], .km-nova input[type=checkbox] {
+    height:50px;
+}*/
+
+
+</style>
+<div data-role="view" data-title="Login" data-layout="main" data-model="app.home" data-show="loginuser" data-after-show="afterloginuser">
+    <!-- START_CUSTOM_CODE_home -->
+    <!-- Add custom code here. For more information about custom code, see http://docs.telerik.com/platform/screenbuilder/troubleshooting/how-to-keep-custom-code-changes -->
+    <div id="homeModel" class="form-view">
+        <form id="formview">
+            <br>
+            <div id="logo">
+                <img src="syscom.png" alt="Sycom PLC" height="120" width="120" style="margin-left:100px;">
+            </div>
+            <ul class="form-content" data-role="listview" data-style="inset">
+                 <li class="form-content-item">
+            <span style="font-size:13px;color:black;"><b>Live</b></span><input style="right:10%;" type="radio" id="site" name="site" value="http://ssb.eveden.local:8980" checked><br>
+            <span style="font-size:13px;color:black;"><b>Test</b></span><input style="right:10%;" type="radio" id="site" name="site" value="http://snowball.eveden.local:8980"><br>
+            <span style="font-size:13px;color:black;"><b>Syscom</b></span><input style="right:10%;" type="radio" id="site" name="site" value="http://spectre.int.syscom.plc.uk:8980">
+                 </li>
+                <li class="form-content-item">
+                    <label>
+                        <span style="font-size:13px;color:black;"><b>Username</b></span>
+                        <input id="username" style="border:solid; border-width:1px;right:10%;font-size:13px;" data-bind="value: homeModel.fields.fiUsername" type="text">
+                    </label>
+                </li>
+                <li class="form-content-item">
+                    <label>
+                        <span style="font-size:13px;color:black;"><b>Password</b></span>
+                        <input id="password" style="border:solid;color:black; border-width:1px;right:10%;font-size:13px;" data-bind="value: homeModel.fields.fiPassword" type="password">
+                    </label>
+                </li>
+            </ul>
+            <div class="button-group">
+                <a style="font-size:13px;color:black;" data-role="button" data-bind="events: { click: homeModel.submit }" data-click="authenticateuser"><b>Login</b></a>
+                <a style="font-size:13px;color:black;" data-role="button" data-click="closeapp"><b>Close App</b></a>
+                  
+            </div>
+            <div id="win7" >
+                <!--<input id="errormsg7" readonly style="border:none;font-size:14px;width:100%;" type="text"></input>-->
+                <textarea readonly name="errormsg7" id="errormsg7" style=" color:black;height:30px;font-size:14px; font-family: Arial, Helvetica, sans-serif; border:none;width:100%;resize:none; "></textarea>
+                <br><br>
+                <button type="button" id="btnClose7" style="width:100%;height:40px;">Ok</button>
+                
+            </div>       
+            <!--<a data-role="button" data-bind="events: { click: homeModel.submit }">Login</a>-->
+
+            <div id="copyright">
+               
+                <span style="font-size:13px;color:black;margin-left:60px;"><b>Copyright © 2016 Syscom PLC</b></span>
+                <br>
+<span style="font-size:13px;color:black;margin-left:100px;"><b>All rights reserved.</b></span>
+                
+                
+            </div>
+        </form>
+        <audio id="errorbeep" src="errorbeep.wav" preload="auto"></audio>
+            <!-- START_CUSTOM_CODE_homeModel -->
+        <!-- Add custom code here. For more information about custom code, see http://docs.telerik.com/platform/screenbuilder/troubleshooting/how-to-keep-custom-code-changes -->
+        <script>
+            
+            $("#win7").kendoWindow({
+                width: "300px",
+                height: "100px",
+                modal: true,
+                visible: false
+            });
+            $("#open1").click(function () {
+                $("#win7").data("kendoWindow").open();
+            });
+            $("#btnClose7").click(function () {
+                $("#win7").data("kendoWindow").close();
+            });
+
+            //change between live and test
+            $(document).on("change","input[type=radio]",function(){
+                var site=$('[name="site"]:checked').val();
+      
+                csite = site;
+
+            });
+
+            function closeapp() {
+                navigator.app.exitApp();
+            };            
+            
+            function loginuser() {
+                document.getElementById("username").focus();
+                
+                $('#username').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    event.preventDefault();
+                    document.getElementById("password").focus();
+                }
+                });
+                $('#password').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    event.preventDefault();
+                    authenticateuser()
+                }
+                });                
+            }
+
+            function afterloginuser() {
+                document.getElementById("username").focus();
+            }
+
+            function authenticateuser() {
+
+                var username = document.getElementById("username").value;
+                var password = document.getElementById("password").value;
+                var erroraudio = document.getElementById("errorbeep");
+                if (username == "") {
+					erroraudio.play();
+                    document.getElementById("errormsg7").value = "You must enter a username";
+                    $("#win7").data("kendoWindow").open();
+
+                    return false;
+                }
+                if (password == "") {
+					erroraudio.play();
+                    document.getElementById("errormsg7").value = "You must enter a password";
+                    $("#win7").data("kendoWindow").open();
+
+                    return false;
+                }
+                
+                $.ajax({
+                    
+                        method: "POST",
+                        //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/login",
+                    	url: csite + "/mfgshipment/rest/mfgshipment/login",
+                        //url: "http://snowball.eveden.local:8980/mfgshipment/rest/mfgshipment/login",
+                        //url: "http://ned.eveden.local:8980/mfgshipment/rest/mfgshipment/login",
+                        headers: {
+                            "accept": "application/json",
+                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        data: {
+                            "Username": document.getElementById("username").value,
+                            "Password": document.getElementById("password").value
+                        },
+                        success: function (json) {
+                            console.log(json);
+                        },
+                        //async: false,
+                        timeout: 1000,    
+                        error: function (request, error) {
+                            if (error == "timeout") {
+                                //send request again
+                                $.ajax(this);
+                            } else {
+                                erroraudio.play();
+                                window.alert("Failed to reach server!");
+                                return false;
+                            }
+                        }
+                    })
+                    .done(function (response) {
+                        gcLoginSuccess = (response.UserLogin[0].LoginSuccess);
+                        gcInEntity = (response.UserLogin[0].InEntity);
+                        gcUsername = (response.UserLogin[0].Username);
+                        gcEntityWip = (response.UserLogin[0].EntityWip);
+                        gcActive = (response.UserLogin[0].Active);
+                        gcGlEntity = (response.UserLogin[0].glEntity);
+                        gcLabelPrinter = (response.UserLogin[0].LabelPrinter);
+                        gcArEntity = (response.UserLogin[0].ArEntity);
+                        gcRemoveAllPassword = (response.UserLogin[0].RemoveAllPassword);
+
+                        if (gcLoginSuccess == "N") {
+                            //The user might be inactive so make it the same as erp
+                            if (gcActive == "N") {
+                                erroraudio.play();
+                                document.getElementById("errormsg7").value = "Login deined - your user account is inactive";
+                                $("#win7").data("kendoWindow").open();
+                            } else {
+                                erroraudio.play();
+                                document.getElementById("errormsg7").value = "Please check your username and/or Password";
+                                $("#win7").data("kendoWindow").open();
+                            }
+
+                        } else {
+                            //window.location.href = "./components/formMenu/view.html";
+                            document.getElementById("username").value = "";
+                            document.getElementById("password").value = "";
+
+                            kendo.mobile.application.navigate("components/menu/menu.html");
+                        }
+                    });
+            }
+        </script>
+        <!-- END_CUSTOM_CODE_homeModel -->
+    </div>
+    <!-- END_CUSTOM_CODE_home -->
+</div>

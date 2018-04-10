@@ -1,0 +1,301 @@
+<div data-role="view" data-title="Carton onto Lorry" data-layout="main" data-model="app.home" data-show="startup" data-after-show="afterstartup">
+    <div id="homeModel" class="form-view">
+        <form>
+            <br>
+            <div id="idshipment" style="padding-left:40px;">
+                <span style="padding-right:10px;font-size:13px;color:black;"><b>Shipment</b></span>
+                <input id="shipmentlorry" style="padding-left:2px;font-size:12px; border:solid; border-width:1px; height:25px;" type="text" autofocus>
+            </div>
+            <br>
+            <hr><br>
+            <div id="column1" style="width:55%; float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Ship From</b></span>
+                <input disabled id="shipfromlorry" style=" color:black;font-size:11px; border:solid; border-width:1px; height:22px; width:40%;float:right;" type="text">
+            </div>
+            <div id="column2" style="width:45%;float:right;padding-left:5px;padding-right:5px;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Ship To</b></span>
+                <input disabled id="shiptolorry" style=" color:black;font-size:11px; border:solid; border-width:1px; height:22px;width:55%;float:right;" type="text">
+            </div>
+            <br>
+            <div id="column3" style="width:55%;float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Plan Ship Date</b></span>
+                <input disabled id="planshiplorry" style="color:black;font-size:11px; border:solid; border-width:1px; height:22px;width:40%;float:right;" type="text">
+            </div>
+            <br><br>
+            <div id="column4" style="width:55%; float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Shipper</b></span>
+                <input disabled id="shipperlorry" style=" color:black;font-size:11px; border:solid; border-width:1px; height:22px; width:40%;float:right;" type="text">
+            </div>
+            <div id="column5" style="width:45%;float:right;padding-right:5px;padding-left:5px;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Ship Ref.</b></span>
+                <input disabled id="shipreflorry" style=" color:black;font-size:11px; border:solid; border-width:1px; height:22px;width:55%;float:right;" type="text">
+            </div>
+            <br><br>
+            <div id="comment" style="padding-right:5px;">
+                <span style="font-size:13px;padding-left:5px;color:black;"><b>Comment  </b></span>
+                <textarea disabled name="commentslorry" id="commentslorry" style=" color:black;height:50px;font-size:11px; font-family: Arial, Helvetica, sans-serif; border:solid; border-width:1px;float:right; width:67%; "></textarea>
+            </div>
+            <br><br><br>
+            <div id="no1" style="padding-left:5px;">
+                <span style="font-size:12px;color:black;"><b>No of Cartons in Shipment </b></span>
+                <input disabled id="noofcartonslorry" style="color:black;font-size:10px; border:solid; border-width:1px;height:22px;width:10%;" data-bind="value: homeModel.fields.fishipper" type="text">
+            </div>
+            <div id="no2" style="padding-left:5px;">
+                <span style="font-size:12px;padding-right:12px;color:black;"><b>No of Items in Shipment</b> </span>
+                <input disabled id="noofitemslorry" style="color:black;font-size:10px; border:solid; border-width:1px;height:22px;width:10%;" data-bind="value: homeModel.fields.fishipper" type="text">
+            </div>
+            <br>
+            <div id="idcartonlorry" style="width:72%; float:left; display:none;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Carton</b></span>
+                <input id="cartonlorry" style="padding-left:2px;font-size:11px; border:solid; border-width:1px; height:22px; width:55%;float:right;" type="text">
+            </div>
+            <div class="button-group" style="margin-bottom:-8%">
+                <a style="font-size:13px;color:black;" id="btnCancellorry" data-role="button" data-reload="true" onClick="cancelCarton()"><b>Cancel</b></a>
+            </div>
+            <div class="button-group" style="margin-bottom:-8%">
+                <a style="font-size:13px;color:black;" id="btnReviewlorry" data-reload="true" data-role="button" onClick="reviewscreen()"><b>Review</b></a>
+            </div>
+            <div id="win6">
+                <!--<input id="errormsg6" readonly style="border:none;font-size:14px;width:100%;" type="text"></input>-->
+                <textarea name="errormsg6" id="errormsg6" style="resize: none;border:none;font-size:14px;font-family: Arial, Helvetica, sans-serif;width:100%; "></textarea>
+                <br><br>
+                <button type="button" id="btnClose6" style="width:100%;height:40px;">Ok</button>
+            </div>
+            <audio id="errorbeep" src="errorbeep.wav" preload="auto"></audio>
+        </form>
+    </div>
+    <!-- START_CUSTOM_CODE_formPutAwayUpdModel -->
+    <script>
+        
+        var lship = "";
+        var erroraudio = document.getElementById("errorbeep");
+        $("#win6").kendoWindow({
+            width: "300px",
+            height: "100px",
+            modal: true,
+            visible: false
+        });
+        $("#open1").click(function () {
+            $("#win6").data("kendoWindow").open();
+        });
+        $("#btnClose6").click(function () {
+            $("#win6").data("kendoWindow").close();
+            if(lship == "y") {
+               lship = "";
+              document.getElementById("cartonlorry").focus();  
+            }
+            else {
+                lship = "";
+                document.getElementById("shipmentlorry").focus()
+            }
+
+        });
+
+        document.getElementById("shipmentlorry").focus();
+        /*var serviceURI = "http://spectre.int.syscom.plc.uk:8980/BoxContentsViewService",
+            catalogURI = serviceURI + "/static/BoxContentsViewService.json";*/
+        var serviceURI = "http://snowball.eveden.local:8980/WacoalWTLMobileService";
+        var catalogURI = serviceURI + "/static/WacoalWTLMobileService.json";
+        /*   var serviceURI = "http://oemobiledemo.progress.com/MobilityDemoService",
+               catalogURI = serviceURI + "/static/mobile/MobilityDemoService.json";  */
+        var ccartondata;
+        var cshipmentdata;
+
+        $(document).ready(function () {
+            $('#shipmentlorry').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    event.preventDefault();
+                    var getcarton = document.getElementById("shipmentlorry").value
+                    if (getcarton == '') {
+                        erroraudio.play();
+                        document.getElementById("errormsg6").value = "A Shipment must be entered";
+                        $("#win6").data("kendoWindow").open();
+                    } else {
+                        shipmententered = "y";
+                        ShowShipmentDetails();
+                    }
+                }
+            });
+            $('#cartonlorry').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    var ccartonno = document.getElementById("cartonlorry").value;
+                    if (ccartonno == '') {
+                        erroraudio.play();
+                        document.getElementById("errormsg6").value = "A carton must be entered";
+                        $("#win6").data("kendoWindow").open();
+                    } else {
+                        onAfterFillCartonNo();
+                    }
+                }
+            });
+
+            function ShowShipmentDetails() {
+
+                $.ajax({
+                        method: "POST",
+                        //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/getshipmentdetails",
+                        url: csite + "/mfgshipment/rest/mfgshipment/getshipmentdetails",
+                        headers: {
+                            "accept": "application/json",
+                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        dataType: 'json',
+                        data: {
+                            "EntityWip": gcEntityWip,
+                            "ShipmentNo": document.getElementById("shipmentlorry").value
+                        },
+                        success: function (json) {
+
+                            //$("#grid1").data("kendoGrid").dataSource.data(testdata);
+
+                            console.log(json);
+                        },
+                        async: false,
+                        timeout: 1000,
+                        error: function (request, error) {
+                            if (error == "timeout") {
+                                //send request again
+                                $.ajax(this);
+                            } else {
+                                erroraudio.play();
+                                window.alert("Failed to reach server!");
+                                return false;
+                            }
+                        }
+                    })
+                    .done(function (response) {
+
+                        var recordcreated = (response.ttMfgShipment[0].RecordCreated);
+
+                        if (recordcreated == "N") {
+                            erroraudio.play();
+                            var cerror = "Shipment '" + document.getElementById("shipmentlorry").value + "' cannot be found";
+                            document.getElementById("shipmentlorry").value = "";
+                            document.getElementById("errormsg6").value = cerror;
+                            $("#win6").data("kendoWindow").open();
+                            document.getElementById("shipmentlorry").focus();
+                        } else {
+                            gcShipmentNo = document.getElementById("shipmentlorry").value;
+                            document.getElementById("shipmentlorry").disabled = true;
+                            document.getElementById("idcartonlorry").style.display = 'block';
+                            document.getElementById("shipfromlorry").value = " " + (response.ttMfgShipment[0].ShipFrom);
+                            document.getElementById("shiptolorry").value = " " + (response.ttMfgShipment[0].ShipTo);
+                            document.getElementById("planshiplorry").value = " " + (response.ttMfgShipment[0].PlannedShipDate);
+                            document.getElementById("shipperlorry").value = " " + (response.ttMfgShipment[0].Shipper);
+                            document.getElementById("shipreflorry").value = " " + (response.ttMfgShipment[0].ShipperReference);
+                            document.getElementById("commentslorry").value = " " + (response.ttMfgShipment[0].Comment);
+                            document.getElementById("noofcartonslorry").value = " " + (response.ttMfgShipment[0].NoCartonsInShip)
+                            document.getElementById("noofitemslorry").value = " " + (response.ttMfgShipment[0].NoItemsInShip);
+                            document.getElementById("cartonlorry").focus();
+                        }
+                    });
+
+            }
+
+        });
+
+        function afterstartup() {
+            if (gcShipmentNo == '') {
+                document.getElementById("shipmentlorry").focus();
+                document.getElementById("shipmentlorry").disabled = false;
+            } else {
+                document.getElementById("cartonlorry").focus();
+            }
+        }
+
+        function onAfterFillCartonNo() {
+
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/cartonontolorry",
+                    url: csite + "/mfgshipment/rest/mfgshipment/cartonontolorry",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    data: {
+                        "InEntity": gcInEntity,
+                        "EntityWip": gcEntityWip,
+                        "ArEntity": gcArEntity,
+                        "ShipmentNo": gcShipmentNo,
+                        "CartonNo": document.getElementById("cartonlorry").value,
+                        "UserId": gcUsername
+                    },
+                    success: function (json) {
+                        console.log(json);
+                    },
+                    async: false,
+                    //timeout: 1000,
+                    error: function (request, error) {
+                        if (error == "timeout") {
+                            //send request again
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+               
+                    // Get the global variables
+                    var cerror = "";
+                    var cerrordesc = "";
+                    cerror = (response.ttShipment[0].Error);
+                    cerrordesc = (response.ttShipment[0].ErrorDesc);
+                    if (cerror == "N") {
+                        document.getElementById("cartonlorry").value = "";
+                        document.getElementById("cartonlorry").focus();
+                        var cnocartons = (response.ttShipment[0].NoCartons);
+                        var cnoitems = (response.ttShipment[0].NoItems);
+                        document.getElementById("noofitemslorry").value = cnoitems;
+                        document.getElementById("noofcartonslorry").value = cnocartons;
+                      
+                    } else {
+                        lship = "y";
+                        erroraudio.play();                        
+                        document.getElementById("errormsg6").value = cerrordesc;
+                        $("#win6").data("kendoWindow").open();
+                        document.getElementById("cartonlorry").value = "";
+                        document.getElementById("cartonlorry").focus();  
+                    }
+                });
+        }
+        /* } else {
+             var cerror = "Carton '" + document.getElementById("cartonlorry").value + "' cannot be found";
+             document.getElementById('audio').play();
+             document.getElementById("errormsg6").value = cerror;
+             $("#win6").data("kendoWindow").open();
+         }*/
+
+        function reviewscreen() {
+            if (gcShipmentNo == '') {} else {
+                kendo.mobile.application.navigate("components/CartonOntoLorry/Review.html");
+            }
+        }
+
+        function cancelCarton() {
+            document.getElementById("shipfromlorry").value = "";
+            document.getElementById("shiptolorry").value = "";
+            document.getElementById("planshiplorry").value = "";
+            document.getElementById("shipperlorry").value = "";
+            document.getElementById("shipreflorry").value = "";
+            document.getElementById("commentslorry").value = "";
+            document.getElementById("noofcartonslorry").value = "";
+            document.getElementById("noofitemslorry").value = "";
+            document.getElementById("idcartonlorry").style.display = 'none';
+            document.getElementById("cartonlorry").value = "";
+            document.getElementById("shipmentlorry").disabled = false;
+            document.getElementById("shipmentlorry").value = "";
+            gcShipmentNo = "";
+            document.getElementById("shipmentlorry").focus();
+            kendo.mobile.application.navigate("components/menu/menu.html");
+        }
+    </script>
+    <!-- END_CUSTOM_CODE_formPutAwayUpdModel -->
+    <!-- START_CUSTOM_CODE_formPutAwayUpd -->
+    <!-- END_CUSTOM_CODE_formPutAwayUpd -->
+</div>

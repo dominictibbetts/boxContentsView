@@ -1,0 +1,140 @@
+
+<div data-role="view" data-title="Carton onto Lorry" data-layout="main" data-model="app.home" data-show="updateShipment" data-after-show="app.home.afterShow">
+    <div id="homeModel" class="form-view">
+        <form>
+            <ul class="form-content" data-role="listview" data-style="inset">
+                <li class="form-content-item">
+                    <label>
+                        <span>Shipment</span>
+                        <input id="shipment" style="border:solid; border-width: 1px; right:10%;" data-bind="value: homeModel.fields.fiShipment" type="text" autofocus>
+                    </label>
+                </li>
+            </ul>
+            <ul class="form-content" data-role="listview" data-style="inset">
+                <li class="form-content-item" style="border-style:none; padding:0; left:4%;">
+                    <span style="font-size:15px;">Ship From</span>
+                    <input id="shipfrom" style="border:solid; width:10%; border-width: 1px; right:30%;" data-bind="value: homeModel.fields.fishipfrom" type="text">
+                </li>
+                <br>
+                <li style="border-style:none; padding:0; left:4%;">
+                    <span style="font-size:15px;">Ship To</span>
+                    <input id="shipto" style="border:solid; width:10%; border-width: 1px; right:30%;" data-bind="value: homeModel.fields.fishipto" type="text">
+                </li>
+                <br>
+                <li class="form-content-item" style="border-style:none; padding:0; left:4%;">
+                    <span style="font-size:15px;">Planned Ship Date  </span>
+                    <input id="planship" style="border:solid; width:10%; border-width: 1px; right:30%;" data-bind="value: homeModel.fields.fiplanship" type="text">
+                </li>
+                <br>
+                <li class="form-content-item" style="border-style:none; padding:0; left:4%;">
+                    <span style="font-size:15px;">Shipper  </span>
+                    <input id="shipper" style="border:solid; width:10%; border-width: 1px; right:30%;" data-bind="value: homeModel.fields.fishipper" type="text">
+                </li>
+                <br>
+                <li class="form-content-item" style="border-style:none; padding:0; left:4%;">
+                    <span style="font-size:15px;">Shipper Ref.  </span>
+                    <input id="shipref" style="border:solid; width:10%; border-width: 1px; right:30%;" data-bind="value: homeModel.fields.fishipref" type="text">
+                </li>
+                <br>
+                <li class="form-content-item" style="border-style:none; padding:0; left:4%;">
+                    <span style="font-size:15px;">Comment  </span>
+                    <textarea name="comments" id="comments" style="font-family:sans-serif; border:solid; border-width:1px;right:11%;"></textarea>
+                </li>
+                <br>
+                <li class="form-content-item" style="border-style:none; padding:0; left:4%;">
+                    <span style="font-size:15px;">No of Cartons in Shipment </span>
+                    <input id="noofcartons" style="border:solid; width:5%; border-width: 1px; right:20%;" data-bind="value: homeModel.fields.finoofcartons" type="text">
+                </li>
+                <li class="form-content-item" style="border-style:none; padding:0; left:4%;">
+                    <span style="font-size:15px;">No of Items in Shipment </span>
+                    <input id="noofitems" style="border:solid; width:5%; border-width: 1px; right:20%;" data-bind="value: homeModel.fields.finoofitems" type="text">
+                </li>
+                
+                <li class="form-content-item">
+                    <label>
+                        <span>Carton</span>
+                        <input id="carton" style="border:solid; border-width: 1px; right:10%;display:none;" data-bind="value: homeModel.fields.ficarton" type="text" autofocus>
+                    </label>
+                </li>
+              
+            </ul>
+            <div class="button-group">
+                <a data-role="button" href="components/menu/menu.html">Cancel</a>
+                <a data-role="button" href="components/menu/menu.html">Next</a>
+            </div>
+                        <div id="example">
+                <div id="grid"></div>
+            </div>
+        </form>
+        <!-- START_CUSTOM_CODE_homeModel -->
+        <!-- Add custom code here. For more information about custom code, see http://docs.telerik.com/platform/screenbuilder/troubleshooting/how-to-keep-custom-code-changes -->
+        <!-- END_CUSTOM_CODE_homeModel -->
+    </div>
+            <script>
+            
+            function updateShipment() {  
+                $('#shipment').keypress(function(event){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode == '13'){
+		//Check the shipment in ERP then make the carton beceom enables and on focus
+        //Display all the data with the MfgCartin data from ERP
+        
+        alert("1");
+
+        var serviceURI = "http://spectre.int.syscom.plc.uk:8980/CartonOntoLorryService",
+        catalogURI = serviceURI + "/static/CartonOntoLorryService.json",
+        resourceName = 'MfgShipment';
+
+        // create a new session object
+        //var session = new progress.data.Session();
+        //session.login(serviceURI, "", "");
+        //session.addCatalog(catalogURI);
+
+        // create a JSDO
+        var cFilter = "WHERE MfgShipmentNo = '102'";
+        //var cShipment = new JSDOTransport(serviceURI, catalogURI, resourceName,"",cFilter);
+        var cShipment = new JSDOTransport(serviceURI, catalogURI, resourceName,"",cFilter);
+
+alert(cShipment);
+ 
+        //var jsdo = new progress.data.JSDO({ name: 'MfgShipment' });    
+        cShipment.subscribe('AfterFill', onAfterFillCustomers, this);
+alert("4");
+        // calling fill reads from the remote OE server
+        cShipment.fill();
+alert("5");
+        // this function is called after data is returned from the server
+        function onAfterFillCustomers(cShipment, success, request) {
+
+			// Find out if a record is not found
+            //alert("Shipment " + document.getElementById("shipment").value + " cannot be found");
+
+            // for each customer record returned
+            cShipment.ttMfgShipment.foreach(function (MfgShipment) {
+                
+                var goosdreceipted = MfgShipment.data.GoodsReceipted;
+                
+                if(goosdreceipted == "true"){
+
+                    alert("Shipment " + document.getElementById("shipment").value + " cannot be found");
+                }
+                else {
+
+                document.getElementById("shipfrom").value = MfgShipment.data.ShipFrom;
+                document.getElementById("shipto").value = MfgShipment.data.ShipTo;
+                document.getElementById("planship").value = MfgShipment.data.PlannedShipDate;
+                document.getElementById("carton").style.display = 'block';
+        		document.getElementById("carton").focus();
+                    
+                }    
+
+            });  //end of jsdo.ttMfgShipment
+        }  //end of onAfterFillCustomers
+    }
+});
+            }
+    </script>
+    <!-- START_CUSTOM_CODE_home -->
+    <!-- Add custom code here. For more information about custom code, see http://docs.telerik.com/platform/screenbuilder/troubleshooting/how-to-keep-custom-code-changes -->
+    <!-- END_CUSTOM_CODE_home -->
+</div>

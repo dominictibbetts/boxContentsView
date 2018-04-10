@@ -1,0 +1,193 @@
+<style>
+    .grid {
+        font-size: 1px;
+    }
+</style>
+<div data-role="view" data-reload="true" data-title="Box Contents" data-layout="main" data-model="app.home" data-show="startup" data-after-show="afterstartup">
+    <div id="homeModel" class="form-view">
+        <form>
+            <ul class="form-content" data-role="listview" data-style="inset">
+                <li class="form-content-item">
+                    <label>
+                        <span style="font-size:13px;color:black;"><b>Carton</b><span>
+                        <input id="cartonbox" style="border:solid; border-width: 1px; right:10%; font-size:13px;" data-bind="value: homeModel.fields.fiCarton" type="text" autofocus></input>
+                    </label>
+                </li>
+            </ul>
+            <div id="example">
+                <div class="grid1" id="grid1"></div>
+            </div>
+            <div class="button-group" style="width:50%; float:right;">
+                <a id="btnExit" style="font-size:13px;color:black;" data-reload="true" data-role="button" onClick="DestroyCartonGrid()"><b>Exit</b></a>
+            </div>
+            <div class="button-group" style="width:50%; float:right;">
+                <a id="btnEnter" style="font-size:13px;color:black;" data-reload="true" data-role="button" data-click="ShowCartonDetails"><b>Enter</b></a>
+            </div>
+            <br><br><br><br>
+            <div id="win1">
+                <!--<input id="errormsg" readonly style="border:none;font-size:14px;width:100%;" type="text"></input>-->
+                <textarea name="errormsg" id="errormsg" style="resize: none;border:none;font-size:14px;font-family: Arial, Helvetica, sans-serif;width:100%; "></textarea>
+                <button type="button" data-reload="true" id="btnClose" style="display:none;width:100%;height:40px;">Ok</button>
+            </div>
+            <audio id="errorbeep" src="errorbeep.wav" preload="auto"></audio>
+        </form>
+        <!-- START_CUSTOM_CODE_homeModel -->
+        <!-- Add custom code here. For more information about custom code, see http://docs.telerik.com/platform/screenbuilder/troubleshooting/how-to-keep-custom-code-changes -->
+        <!-- END_CUSTOM_CODE_homeModel -->
+    </div>
+    <!-- START_CUSTOM_CODE_formPutAwayUpdModel -->
+    <script>
+        $("#win1").kendoWindow({
+            width: "300px",
+            height: "100px",
+            modal: true,
+            visible: false
+        });
+        $("#open1").click(function () {
+            $("#win1").data("kendoWindow").open();
+        });
+        $("#btnClose").click(function () {
+            $("#win1").data("kendoWindow").close();
+            document.getElementById("cartonbox").value = "";
+            document.getElementById("cartonbox").focus();
+        });
+
+		var erroraudio = document.getElementById("errorbeep");
+        /*var serviceURI = "http://spectre.int.syscom.plc.uk:8980/BoxContentsViewService",
+            catalogURI = serviceURI + "/static/BoxContentsViewService.json";*/
+        var serviceURI = "http://snowball.eveden.local:8980/WacoalWTLMobileService",
+            catalogURI = serviceURI + "/static/WacoalWTLMobileService.json";
+        var ccartondata;
+        var Putaway;
+        var cFilter;
+        var resourceName;
+
+        function afterstartup() {
+            document.getElementById("cartonbox").value = "";
+            document.getElementById("cartonbox").focus();
+        }
+
+        function startup() {
+            //$("#grid").empty();
+            document.getElementById("cartonbox").value = "";
+            document.getElementById("cartonbox").focus();
+
+            $('#cartonbox').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    event.preventDefault();
+                    var getcarton = document.getElementById("cartonbox").value
+                    if (getcarton == '') {
+                        erroraudio.play();
+                        document.getElementById("errormsg").value = "A Carton must be entered";
+                        document.getElementById("btnClose").style.display = 'block';
+                        $("#win1").data("kendoWindow").open();
+
+                    } else {
+                        ShowCartonDetails();
+                    }
+                }
+            });
+        }
+
+        function ShowCartonDetails() {
+            var carton = document.getElementById("cartonbox").value;
+            var EntityWip = gcEntityWip;
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/getcartonlines",
+                    url: csite + "/mfgshipment/rest/mfgshipment/getcartonlines",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    dataType: 'json',
+                    data: {
+                        "EntityWip": gcEntityWip,
+                        "CartonNo": document.getElementById("cartonbox").value
+                    },
+                    success: function (json) {
+
+                        //$("#grid1").data("kendoGrid").dataSource.data(testdata);
+
+                        console.log(json);
+                    },
+                    async: false,
+                    timeout: 1000,
+                    error: function (request, error) {
+                        if (error == "timeout") {
+                            //send request again
+                            $.ajax(this);
+                        } else {
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+                    var testdata = "";
+                    var cartondata = "";
+                    var cartonline = "";
+                    var i = 0;
+                    var cartonlinecreated = (response.ttMfgCartonLine[0].RecordCreated);
+
+                    if (cartonlinecreated == "N") {
+                        erroraudio.play();
+                        var nocarton = document.getElementById("cartonbox").value;
+                        var nocartonmsg = "Carton number '" + nocarton + "' cannot be found";
+                        document.getElementById("errormsg").value = nocartonmsg;
+                        document.getElementById("btnClose").style.display = 'block';
+                        $("#win1").data("kendoWindow").open();
+                        //window.alert(nocartonmsg);
+                        document.getElementById("cartonbox").value = "";
+                        document.getElementById("cartonbox").focus();
+                    } else {
+                        var numrecs = (response.ttMfgCartonLine[0].ttNumber);
+                        testdata = [{
+                                Item: (response.ttMfgCartonLine[0].BundleItem),
+                                BundleNo: (response.ttMfgCartonLine[0].BundleBarcode),
+                                Qty: (response.ttMfgCartonLine[0].ActualQuantity)
+                         },
+                         ];
+
+                        var dataSource = new kendo.data.DataSource({
+                            data: testdata
+                        });
+
+                        dataSource.fetch();
+
+                        $("#grid1").kendoGrid({
+                            dataSource: testdata,
+                            scrollable: false,
+                            resizable: true
+                        });
+
+                    
+                        for (i = 1; i < numrecs; i++) {
+
+                            $("#grid1").getKendoGrid().dataSource.add({
+                                Item: (response.ttMfgCartonLine[i].BundleItem),
+                                BundleNo: (response.ttMfgCartonLine[i].BundleBarcode),
+                                Qty: (response.ttMfgCartonLine[i].ActualQuantity)
+                            });
+                        }
+                    }
+                });
+        }
+
+        function DestroyCartonGrid() {
+            $("#grid1").empty();
+            document.getElementById("cartonbox").value = "";
+            document.getElementById("cartonbox").focus();
+            kendo.mobile.application.navigate("components/menu/menu.html");
+        }
+
+        function okclicked() {
+            document.getElementById("cartonbox").value = "";
+            document.getElementById("cartonbox").focus();
+        }
+    </script>
+    <!-- END_CUSTOM_CODE_formPutAwayUpdModel -->
+    <!-- START_CUSTOM_CODE_formPutAwayUpd -->
+    <!-- END_CUSTOM_CODE_formPutAwayUpd -->
+</div>

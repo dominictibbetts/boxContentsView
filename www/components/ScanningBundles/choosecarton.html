@@ -1,0 +1,428 @@
+<div data-role="view" data-title="Bundles into Cartons" data-layout="main" data-model="app.home" data-show="startup" data-after-show="afterstartup">
+    <div id="homeModel" class="form-view">
+        <form>
+            <br>
+            <div id="idshipmentscancarton" style="padding-left:40px;">
+                <span style="padding-right:10px;font-size:13px;color:black;"><b>Shipment</b></span>
+                <input disabled id="shipment2" style="color:black;padding-left:1px;font-size:12px; border:solid; border-width:1px; height:25px;" data-bind="value: homeModel.fields.fiShipment" type="text" autofocus>
+            </div>
+            <br>
+            <hr><br>
+            <div id="column1scancarton" style="width:45%; float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>No. Cartons</b></span>
+                <input disabled id="nocartonscarton" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px; width:30%;float:right;" type="text">
+            </div>
+            <div id="column2scancarton" style="width:45%;float:right;padding-left:5px;padding-right:5px;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>No. Bundles</b></span>
+                <input disabled id="nobundlescarton" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px;width:30%;float:right;" type="text">
+            </div>
+            <br>
+            <div id="column3scancarton" style="width:45%;float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Total Qty</b></span>
+                <input disabled id="totalqtycarton" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px;width:30%;float:right;" type="text">
+            </div>
+            <br><br><br>
+            <hr><br>
+            <span style="font-size:12px;padding-left:5px;color:black;"><b>Carton Size</b></span>
+            <input id="dropdownlist" class="kendodrop" type="text" />
+            <!--<div id="cartonsize" style="padding-left:5px;padding-right:5px;">
+                <span style="font-size:13px;padding-left:5px;">Carton Size</span>
+                <input id="cartonsize" style="background-color:white; color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px;" type="text">
+            </div>-->
+            <br><br>
+            <div id="cartonscan" style="">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Carton</b></span>
+                <input id="carton2" style="background-color:white; color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px;" type="text">
+            </div>
+            <div class="button-group">
+                <a style="font-size:13px;color:black;" id="returntoship" data-role="button" onClick="returnscreen()"><b>Return</b></a>
+                <!--<a style="font-size:13px;color:black;" id="btnReview" data-role="button" onClick="gotonext()"><b>Next</b></a>-->
+            </div>
+            <div id="win3">
+                <!--<input id="errormsg3" readonly style="border:none;font-size:14px;width:100%;" type="text"></input>-->
+                <textarea name="errormsg3" id="errormsg3" style="resize: none;border:none;font-size:14px;font-family: Arial, Helvetica, sans-serif;width:100%; "></textarea>
+                <br>
+                <button type="button" id="btnYes10" style="display:none;width:100%;height:40px;">Yes</button>
+                <button type="button" id="btnScanYes10" style="display:none;width:100%;height:40px;">Yes</button>
+                <br>
+                <button type="button" id="btnScanNo10" style="display:none;width:100%;height:40px;">No</button>
+                <button type="button" id="btnNo10" style="display:none;width:100%;height:40px;">No</button>
+                <button type="button" id="btnClose3" style="display:none;width:100%;height:40px;">Ok</button>
+                <button type="button" id="btnClose10" style="display:none;width:100%;height:40px;">Ok</button>
+            </div>
+            <audio id="errorbeep" src="errorbeep.wav" preload="auto"></audio>
+        </form>
+    </div>
+    <!-- START_CUSTOM_CODE_formPutAwayUpdModel -->
+    <script>
+        var erroraudio = document.getElementById("errorbeep");
+        $(document).ready(function () {
+            $('#carton2').keypress(function (event) {
+                cartonkeycode = (event.keyCode ? event.keyCode : event.which);
+                if (cartonkeycode == '13') {
+                    ccarton = document.getElementById("carton2").value;
+                    if (document.getElementById("carton2").value == '') {
+                        cartonkeycode = "";
+                        erroraudio.play();
+                        document.getElementById("errormsg3").value = "A carton must be entered";
+                        $("#win3").data("kendoWindow").open();
+
+                    } else {
+                        
+                        cartonkeycode = "";
+                        validatecarton();
+                    }
+                }
+            });
+
+        });
+
+        function setcartondata() {
+            gcCartonSize = document.getElementById("dropdownlist").value;
+        }
+
+        $("#win3").kendoWindow({
+            width: "300px",
+            height: "150px",
+            modal: true,
+            visible: false
+        });
+        $("#open1").click(function () {
+            $("#win3").data("kendoWindow").open();
+        });
+        $("#btnClose3").click(function () {
+            $("#win3").data("kendoWindow").close();
+            document.getElementById("btnClose3").style.display = 'none';
+            document.getElementById("btnClose10").style.display = 'none';
+            document.getElementById("carton2").value = "";
+            document.getElementById("carton2").focus();
+        });
+        $("#btnClose10").click(function () {
+            $("#win3").data("kendoWindow").close();
+            erroraudio.play();        
+            document.getElementById("errormsg3").value = "Do you want to remove this carton?";
+            document.getElementById("btnYes10").style.display = 'block';
+            document.getElementById("btnNo10").style.display = 'block';
+            document.getElementById("btnClose10").style.display = 'none';
+            document.getElementById("btnClose3").style.display = 'none';
+            $("#win3").data("kendoWindow").open();
+        });
+        $("#btnYes10").click(function () {
+            glUpdateScanDate = false;
+            glAskRemoveCarton = false;
+            $("#win3").data("kendoWindow").close();
+            document.getElementById("btnYes10").style.display = 'none';
+            document.getElementById("btnNo10").style.display = 'none'; 
+            document.getElementById("btnScanYes10").style.display = 'none';
+            document.getElementById("btnScanNo10").style.display = 'none';                       
+            RemoveCartonYes();
+        });
+        $("#btnNo10").click(function () {
+            $("#win3").data("kendoWindow").close();
+            document.getElementById("btnYes10").style.display = 'none';
+            document.getElementById("btnNo10").style.display = 'none'; 
+            document.getElementById("btnScanYes10").style.display = 'none';
+            document.getElementById("btnScanNo10").style.display = 'none';                                     
+            RemoveCartonNo();
+        });
+        $("#btnScanYes10").click(function () {
+            $("#win3").data("kendoWindow").close();
+            document.getElementById("btnYes10").style.display = 'none';
+            document.getElementById("btnNo10").style.display = 'none'; 
+            document.getElementById("btnScanYes10").style.display = 'none';
+            document.getElementById("btnScanNo10").style.display = 'none';             
+            setScanDate();
+        });
+        $("#btnScanNo10").click(function () {
+            $("#win3").data("kendoWindow").close();
+            document.getElementById("btnYes10").style.display = 'none';
+            document.getElementById("btnNo10").style.display = 'none'; 
+            document.getElementById("btnScanYes10").style.display = 'none';
+            document.getElementById("btnScanNo10").style.display = 'none';             
+        });        
+
+        var ccartondata;
+        var cshipmentdata;
+        var cresperror;
+        var ccarton;
+        document.getElementById("shipment2").value = gcShipmentNoForBundle;
+        document.getElementById("nocartonscarton").value = gcNoCartons;
+        document.getElementById("nobundlescarton").value = gcNoBundles;
+        document.getElementById("totalqtycarton").value = gcNoItems;
+
+        function setcartondata() {
+            gcCartonSize = document.getElementById("dropdownlist").value;
+        }
+
+        function startup() {
+            var cartonsize = [];
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/getcartonsizes",
+                    url: csite + "/mfgshipment/rest/mfgshipment/getcartonsizes",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    data: {
+                        "InEntity": gcInEntity,
+                        "GlEntity": gcGlEntity
+                    },
+                    success: function (result) {},
+                    async: false,
+                    timeout: 5000,
+                    error: function (data) {
+                        erroraudio.play();
+                        alert("Failed to reach server");
+                        return false;
+                    }
+                })
+                .done(function (response) {
+
+                    var numcartonsize = (response.ttCartonSize[0].NumRecs);
+                    var cartonsizedata;
+                    var icarton = 0;
+
+                    if (numcartonsize == 0) {} else {
+                        cartonsizedata = [
+                            (response.ttCartonSize[0].CartonDesc)
+             				];
+
+                        for (icarton = 1; icarton < numcartonsize; icarton++) {
+                            cartonsizedata.push((response.ttCartonSize[icarton].CartonDesc));
+                        }
+
+                        var dataSource2 = new kendo.data.DataSource({
+                            data: cartonsizedata
+                        });
+
+                        dataSource2.fetch();
+
+                        $("#dropdownlist").kendoDropDownList({
+                            dataSource: cartonsizedata,
+                            dataBound: function () {
+                                if (gcCartonSize == "") {
+                                    this.select(0);
+                                }
+                            }
+                        });
+                    }
+                });
+            $('#dropdownlist').change(setcartondata).change();
+        }
+
+        function afterstartup() {
+            document.getElementById("shipment2").value = gcShipmentNoForBundle;
+            document.getElementById("carton2").focus();
+            document.getElementById("nocartonscarton").value = gcNoCartons;
+            document.getElementById("nobundlescarton").value = gcNoBundles;
+            document.getElementById("totalqtycarton").value = gcNoItems;
+
+            //$('#dropdownlist').change(setcartondata).change();            
+
+        }
+
+        function validatecarton() {
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/validatecarton",
+                    url: csite + "/mfgshipment/rest/mfgshipment/validatecarton",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    data: {
+                        "EntityWip": gcEntityWip,
+                        "InEntity": gcInEntity,
+                        "CartonNo": document.getElementById("carton2").value,
+                        "ShipmentNo": document.getElementById("shipment2").value,
+                        "AskRemove": glAskRemoveCarton,
+                        "RemoveCarton": glRemoveCartonScan,
+                        "UpdateScanDate": glUpdateScanDate,
+                        "UserId": gcUsername
+                    },
+                    success: function (json) {
+                        console.log(json);
+                    },
+                    async: false,
+                    //timeout: 1000,
+                    error: function (request, error) {
+                        if (error == "timeout") {
+                            //send request again
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+                    cresperror = (response.ttCarton[0].cError);
+                    if (cresperror == '') {
+                        if (glRemoveCartonScan == false) {
+
+                        glCartonSingleItem = (response.ttCarton[0].SingleItem);
+                        gcScanBundleCarton = document.getElementById("carton2").value;
+                        document.getElementById("carton2").value = '';
+                        kendo.mobile.application.navigate("components/ScanningBundles/choosebundle.html");
+                        }
+                        else {
+                            //reset the values on the screen 
+                            glRemoveCartonScan = false;
+                            document.getElementById("carton2").value = ''; 
+                            setscreenvalues();  
+                                                    
+                        }
+                    } else {
+                        if(cresperror == 'ScanedToShipment') {
+                            erroraudio.play();        
+                            document.getElementById("errormsg3").value = "Carton Already Scanned to Shipment";
+                            document.getElementById("btnYes10").style.display = 'none';
+                            document.getElementById("btnNo10").style.display = 'none';
+                            document.getElementById("btnClose10").style.display = 'block';
+                            $("#win3").data("kendoWindow").open();
+                        }
+                        else {
+                            erroraudio.play();
+                            document.getElementById("errormsg3").value = cresperror;
+                            document.getElementById("btnClose3").style.display = 'block';
+                            $("#win3").data("kendoWindow").open();
+                        }
+                    }
+                });
+        }
+
+        function RemoveCartonYes() {
+           
+            //run the validate again to 
+            glAskRemoveCarton = false;
+            glRemoveCartonScan = true;
+            glUpdateScanDate = false;
+            validatecarton();
+        }
+
+        function RemoveCartonNo() {
+            //ask if they want to update the scan date and then put it back to the validate code 
+            erroraudio.play();        
+            document.getElementById("errormsg3").value = "Update Scan Date?";
+            document.getElementById("btnScanYes10").style.display = 'block';
+            document.getElementById("btnScanNo10").style.display = 'block';
+            document.getElementById("btnYes10").style.display = 'none';
+            document.getElementById("btnNo10").style.display = 'none';            
+            document.getElementById("btnClose10").style.display = 'none';
+            $("#win3").data("kendoWindow").open();
+        }
+
+        function setScanDate(){
+            glAskRemoveCarton = false;
+            glRemoveCartonScan = false;
+            glUpdateScanDate = true;
+            validatecarton();
+        }
+
+        function setscreenvalues(){
+
+            $.ajax({
+                        method: "POST",
+                        //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/getshipmentdetails",
+                        url: csite + "/mfgshipment/rest/mfgshipment/getshipmentdetails",
+                        headers: {
+                            "accept": "application/json",
+                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        dataType: 'json',
+                        data: {
+                            "EntityWip": gcEntityWip,
+                            "ShipmentNo": document.getElementById("shipment2").value
+                        },
+                        success: function (json) {
+
+                            //$("#grid1").data("kendoGrid").dataSource.data(testdata);
+
+                            console.log(json);
+                        },
+                        async: false,
+                        timeout: 1000,
+                        error: function (request, error) {
+                            if (error == "timeout") {
+                                //send request again
+                                $.ajax(this);
+                            } else {
+                                erroraudio.play();
+                                window.alert("Failed to reach server!");
+                                return false;
+                            }
+                        }
+                    })
+                    .done(function (response) {
+
+                        var recordcreated = (response.ttMfgShipment[0].RecordCreated);
+
+                        //if (recordcreated == "N") {
+                            //erroraudio.play();
+                            //document.getElementById("errormsg2").value = "Shipment '" + document.getElementById("shipmentbundle").value + "' cannot be found";
+                            //$("#win2").data("kendoWindow").open();
+
+                       // } else {
+
+                            //if ((response.ttMfgShipment[0].ContentsLocked) == true) {
+                                //erroraudio.play();
+                                //document.getElementById("errormsg2").value = "The Carton is assigned to a shipment that is flagged as contents locked";
+                                //$("#win2").data("kendoWindow").open();
+                                //document.getElementById("shipmentbundle").value = "";
+                           // } else {
+                                gcNoCartons = (response.ttMfgShipment[0].NoCartonsInShip);
+                                gcNoBundles = (response.ttMfgShipment[0].NoBundles);
+                                gcNoItems = (response.ttMfgShipment[0].NoItemsInShip);
+                                document.getElementById("nocartonscarton").value = gcNoCartons;
+                                document.getElementById("nobundlescarton").value = gcNoBundles;
+                                document.getElementById("totalqtycarton").value = gcNoItems;
+                            //}
+                        //}
+                    });
+        }
+
+        function gotonext() {
+            //kendo.mobile.application.navigate("components/ScanningBundles/choosebundle.html");
+        }
+
+        function returnscreen() {
+            kendo.mobile.application.navigate("components/ScanningBundles/scanbundles.html");
+        }
+    </script>
+    <style>
+        .km-nova .km-popup .k-item,
+        .km-nova .km-actionsheet>li>a {
+            font-size: 10px;
+            color: black;
+        }
+        .k-textbox>input,
+        .k-autocomplete .k-input,
+        .k-picker-wrap .k-input,
+        .k-numeric-wrap .k-input,
+        .k-dropdown-wrap .k-input,
+        .k-selectbox .k-input {
+            font-size: 10px;
+            color: black;
+        }
+        .k-grid-header-wrap,
+        .k-grid .k-grouping-header,
+        .k-grid-header,
+        .k-pager-wrap,
+        .k-pager-wrap .k-textbox,
+        .k-pager-wrap .k-link,
+        .k-grouping-header .k-group-indicator,
+        .k-gantt-toolbar .k-state-default {
+            width: 50%;
+        }
+        .k-picker-wrap .k-select,
+        .k-numeric-wrap .k-select,
+        .k-dropdown-wrap .k-select {
+            line-height: 1.25en;
+        }
+    </style>
+    <!-- END_CUSTOM_CODE_formPutAwayUpdModel -->
+    <!-- START_CUSTOM_CODE_formPutAwayUpd -->
+    <!-- END_CUSTOM_CODE_formPutAwayUpd -->
+</div>

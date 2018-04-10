@@ -1,0 +1,311 @@
+<div data-role="view" data-title="Bundles into Cartons" data-layout="main" data-model="app.home" data-show="startup" data-after-show="afterstartup">
+    <div id="homeModel" class="form-view">
+        <form>
+            <br>
+            <div id="idshipment" style="padding-left:40px;">
+                <span style="padding-right:8px;font-size:13px;color:black;"><b>Shipment</b></span>
+                <input disabled id="shipment3" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:25px;" type="text" autofocus>
+            </div>
+
+            <div hidden id="idcarton" style="padding-left:59px;">
+                <span style="padding-right:2px;font-size:13px;color:black;"><b>Carton</b></span>
+                <input disabled id="carton3" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:25px;" type="text" autofocus>
+            </div>
+<br>           
+
+            <div id="bundle2div" style="padding-left:34px;">
+                <span style="padding-right:0px;font-size:13px;color:black;"><b>No. Bundles</b></span>
+                <input disabled id="nobundlescartonbundlescan" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px; width:40px;" type="text">
+            </div>
+
+            <div id="bundle3div" style="padding-left:45px;">
+                <span style="padding-right:10px;font-size:13px;color:black;"><b>Total Qty</b></span>
+                <input disabled id="totalqtycartonbundlescan" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px;width:40px;" type="text">
+            </div>
+            <br>
+            <hr>
+            <br>
+            <div id="idbundle" style="padding-left:58px;">
+                <span style="padding-right:10px;font-size:13px;color:black;"><b>Bundle</b></span>
+                <input id="bundle3" style="background-color:white; color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:25px;" type="text" autofocus>
+            </div>
+            <br>
+            <div class="button-group">
+                <a style="font-size:12px;color:black;" data-role="button" onClick="returncarton()"><b>Return</b></a>
+                <a style="font-size:12px;color:black;" id="btnFinish" data-role="button" onClick="finishcarton()"><b>Finish Carton</b></a>
+            </div>
+            <div id="win4">
+                <!--<input id="errormsg4" readonly style="border:none;font-size:14px;width:100%;" type="text"></input>-->
+                <textarea name="errormsg4" id="errormsg4" style="resize: none;border:none;font-size:12px;font-family: Arial, Helvetica, sans-serif;width:100%; "></textarea>
+                <br>
+                <button type="button" id="btnClose4" style="width:100%;height:25px;">Ok</button>
+                <button type="button" id="btnYes4" style="display:none;width:100%;">Yes</button>
+                <br>
+                <button type="button" id="btnNo4" style="display:none;width:100%;">No</button>
+            </div>
+            <audio id="errorbeep" src="errorbeep.wav" preload="auto"></audio>
+        </form>
+    </div>
+    <!-- START_CUSTOM_CODE_formPutAwayUpdModel -->
+    <script>
+        var erroraudio = document.getElementById("errorbeep");
+        $("#win4").kendoWindow({
+            width: "300px",
+            height: "100px",
+            modal: true,
+            visible: false
+        });
+        $("#open1").click(function () {
+            $("#win4").data("kendoWindow").open();
+        });
+        $("#btnClose4").click(function () {
+            $("#win4").data("kendoWindow").close();
+            document.getElementById("bundle3").value = "";
+            document.getElementById("bundle3").focus();
+        });
+        $("#btnYes4").click(function () {
+            $("#win4").data("kendoWindow").close();
+            RemoveYes();
+        });
+        $("#btnNo4").click(function () {
+            $("#win4").data("kendoWindow").close();
+            RemoveNo();
+        });
+
+        /*var serviceURI = "http://spectre.int.syscom.plc.uk:8980/BoxContentsViewService",
+            catalogURI = serviceURI + "/static/BoxContentsViewService.json";*/
+        var serviceURI = "http://snowball.eveden.local:8980/WacoalWTLMobileService",
+            catalogURI = serviceURI + "/static/WacoalWTLMobileService.json";     
+        var ccartondata;
+        var cshipmentdata;
+        var cbundleerror;
+        var lRemoveBundle;
+
+        document.getElementById("shipment3").value = gcShipmentNoForBundle;
+        document.getElementById("carton3").value = gcScanBundleCarton;
+        //document.getElementById("nocartonscartonbundlescan").value = gcNoCartons;
+        //document.getElementById("nobundlescartonbundlescan").value = gcNoBundles;
+        //document.getElementById("totalqtycartonbundlescan").value = gcNoItems;
+
+        $(document).ready(function () {
+
+            //get the carton quantities to display 
+            showquantities();
+
+            $('#bundle3').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13') {
+                    var cbundle3 = document.getElementById("bundle3").value;
+                    if (cbundle3 == '') {
+                        erroraudio.play();
+                        document.getElementById("errormsg4").value = "A bundle must be entered";
+                        $("#win4").data("kendoWindow").open();
+                    } else {
+                        //maybe check here if the same carton number has been entered to then go to finish carton
+                        if (cbundle3 == gcScanBundleCarton) {
+                            finishcarton();
+                        }
+                        else {
+                        validatebundle();
+                        }
+                    }
+                }
+            });
+        });
+
+        function startup() {}
+
+        function afterstartup() {
+            document.getElementById("shipment3").value = gcShipmentNoForBundle;
+            document.getElementById("carton3").value = gcScanBundleCarton;
+            document.getElementById("bundle3").focus();
+        }
+
+        function showquantities() {
+            $.ajax({
+                    
+                        method: "POST",
+                        //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/login",
+                    	url: csite + "/mfgshipment/rest/mfgshipment/getcartondetails",
+                        //url: "http://ned.eveden.local:8980/mfgshipment/rest/mfgshipment/login",
+                        headers: {
+                            "accept": "application/json",
+                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        data: {
+                            "EntityWip": gcEntityWip,
+                            "CartonNo": gcScanBundleCarton
+                        },
+                        success: function (json) {
+                            console.log(json);
+                        },
+                        //async: false,
+                        timeout: 1000,    
+                        error: function (request, error) {
+                            if (error == "timeout") {
+                                //send request again
+                                $.ajax(this);
+                            } else {
+                                erroraudio.play();
+                                window.alert("Failed to reach server!");
+                                return false;
+                            }
+                        }
+                    })
+                    .done(function (response) {
+                        gcNoBundles = (response.ttMfgCarton[0].NoBundle);
+                        gcNoItems = (response.ttMfgCarton[0].NoQuantity);
+            
+                        document.getElementById("nobundlescartonbundlescan").value = gcNoBundles;
+                        document.getElementById("totalqtycartonbundlescan").value = gcNoItems;
+                    });
+        }
+
+        function finishcarton() {
+            
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/finishcarton",
+                	url: csite + "/mfgshipment/rest/mfgshipment/finishcarton",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    data: {
+                        "EntityWip": gcEntityWip,
+                        "InEntity": gcInEntity,
+                        "ShipmentNo": document.getElementById("shipment3").value,
+                        "CartonNo": document.getElementById("carton3").value,
+                        "SingleItem": glCartonSingleItem,
+                        "UserId": gcUsername,
+                        "LabelPrinter": gcLabelPrinter
+                    },
+                    success: function (json) {
+                        console.log(json);
+                    },
+                    async: false,
+                    timeout: 5000,
+                    error: function (request, error) {
+
+                        if (error == "timeout") {
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+                    gcNoCartons = (response.ttFinisharton[0].cNoCartons);
+                    gcNoBundles = (response.ttFinisharton[0].cNoBundles);
+                    gcNoItems = (response.ttFinisharton[0].cTotQty);
+
+                    kendo.mobile.application.navigate("components/ScanningBundles/choosecarton.html");
+                });
+        }
+
+        function validatebundle() {
+             
+            $.ajax({
+                    method: "POST",
+                    //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/scanbundle",
+                  url: csite + "/mfgshipment/rest/mfgshipment/scanbundle",
+                    headers: {
+                        "accept": "application/json",
+                        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                    },
+                    data: {
+                        "EntityWip": gcEntityWip,
+                        "InEntity": gcInEntity,
+                        "ArEntity": gcArEntity,
+                        "BundleNo": document.getElementById("bundle3").value,
+                        "CartonNo": document.getElementById("carton3").value,
+                        "ShipmentNo": document.getElementById("shipment3").value,
+                        "SingleItem": glCartonSingleItem,
+                        "RemoveBundle": glRemoveBundle,
+                        "UserId": gcUsername,
+                        "CartonSize": gcCartonSize
+                    },
+                    success: function (json) {
+                        console.log(json);
+                    },
+                    async: false,
+                    timeout: 5000,
+                    error: function (request, error) {
+
+                        if (error == "timeout") {
+                            $.ajax(this);
+                        } else {
+                            erroraudio.play();
+                            window.alert("Failed to reach server!");
+                            return false;
+                        }
+                    }
+                })
+                .done(function (response) {
+                 
+                    glRemoveBundle = false;
+                    cbundleerror = (response.ttBundle[0].cError);
+                    lRemoveBundle = (response.ttBundle[0].lRemoveBundle);
+
+                    //update the totals
+                    gcNoBundles = (response.ttBundle[0].cNoBundles);
+                    gcNoItems = (response.ttBundle[0].cTotQty);
+            
+                    document.getElementById("nobundlescartonbundlescan").value = gcNoBundles;
+                    document.getElementById("totalqtycartonbundlescan").value = gcNoItems;
+
+                    if (cbundleerror == '') {
+                        document.getElementById("bundle3").value = '';
+                    } else {
+
+                        if (lRemoveBundle == true) {
+
+                            erroraudio.play();
+                            document.getElementById("errormsg4").value = cbundleerror;
+                            document.getElementById("btnYes4").style.display = 'block';
+                            document.getElementById("btnNo4").style.display = 'block';
+                            document.getElementById("btnClose4").style.display = 'none';
+                            $("#win4").data("kendoWindow").open();
+                        } else {
+                            erroraudio.play();
+                            lRemoveBundle = false;
+                            document.getElementById("errormsg4").value = cbundleerror;
+                            document.getElementById("btnYes4").style.display = 'none';
+                            document.getElementById("btnNo4").style.display = 'none';
+                            document.getElementById("btnClose4").style.display = 'block';
+                            $("#win4").data("kendoWindow").open();
+                        }
+                    }
+                });
+        }
+
+        function okclickedcarton() {
+            document.getElementById("bundle3").value = "";
+            document.getElementById("bundle3").focus();
+        }
+
+        function RemoveYes() {
+            glRemoveBundle = true;
+            validatebundle();
+            document.getElementById("bundle3").value = "";
+            document.getElementById("bundle3").focus();
+        }
+
+        function RemoveNo() {
+            document.getElementById("bundle3").value = "";
+            document.getElementById("bundle3").focus();
+            glRemoveBundle = false;
+        }
+
+        function returncarton() {
+            document.getElementById("bundle3").value = "";
+            document.getElementById("bundle3").focus();
+            kendo.mobile.application.navigate("components/ScanningBundles/choosecarton.html");
+        }
+    </script>
+    <!-- END_CUSTOM_CODE_formPutAwayUpdModel -->
+    <!-- START_CUSTOM_CODE_formPutAwayUpd -->
+    <!-- END_CUSTOM_CODE_formPutAwayUpd -->
+</div>

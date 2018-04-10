@@ -1,0 +1,247 @@
+<div data-role="view" data-title="Bundles into Carton" data-layout="main" data-model="app.home" data-show="startup" data-after-show="afterstartup">
+    <div id="homeModel" class="form-view">
+        <form>
+            <br>
+            <div id="idshipmentbundle" style="padding-left:40px;">
+                <span style="padding-right:10px;font-size:13px;color:black;"><b>Shipment</b></span>
+                <input id="shipmentbundle" style="padding-left:1px;font-size:12px; border:solid; border-width:1px; height:25px;" type="text" autofocus>
+            </div>
+            <br>
+            <hr><br>
+            <div id="column1" style="width:55%; float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Ship From</b></span>
+                <input disabled id="shipfrombundle" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px; width:40%;float:right;" type="text">
+            </div>
+            <div id="column2" style="width:45%;float:right;padding-left:5px;padding-right:5px;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Ship To</b></span>
+                <input disabled id="shiptobundle" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px;width:55%;float:right;" type="text">
+            </div>
+            <br>
+            <div id="column3" style="width:55%;float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Plan Ship Date</b></span>
+                <input disabled id="planshipbundle" style="color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px;width:40%;float:right;" type="text">
+            </div>
+            <br><br><br>
+            <div id="column4" style="width:55%; float:left;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Shipper</b></span>
+                <input disabled id="shipperbundle" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px; width:40%;float:right;" type="text">
+            </div>
+            <div id="column5" style="width:45%;float:right;padding-right:5px;padding-left:5px;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Ship Ref.</b></span>
+                <input disabled id="shiprefbundle" style=" color:black;padding-left:1px;font-size:11px; border:solid; border-width:1px; height:22px;width:55%;float:right;" type="text">
+            </div>
+            <br><br><br>
+            <div id="comment" style="padding-right:5px;">
+                <span style="font-size:12px;padding-left:5px;color:black;"><b>Comment</b>  </span>
+                <textarea disabled name="commentsbundle" id="commentsbundle" style=" color:black;height:50px;font-size:11px; font-family: Arial, Helvetica, sans-serif; border:solid; border-width:1px;float:right; width:67%; "></textarea>
+            </div>
+            <div class="button-group" data-reload="true">
+                <a style="font-size:13px;color:black;" data-role="button" data-reload="true" onClick="clickCancel()"><b>Cancel</b></a>
+                <a style="font-size:13px;color:black;" id="btnNext" data-role="button" onClick="gotonext()"><b>Next</b></a>
+            </div>
+            <div id="win2">
+                <!--<textarea name="errormsg2" id="errormsg2" style="resize: none;border:none;font-size:12px;font-family: Arial, Helvetica, sans-serif;width:100%; "></textarea>-->
+                <textarea name="errormsg2" id="errormsg2" style="resize: none;border:none;font-size:14px;font-family: Arial, Helvetica, sans-serif;width:100%; "></textarea>
+                <!--<input id="errormsg2" readonly style="border:none;font-size:14px;width:100%;" type="text"></input>-->
+                <br><br>
+                <button type="button" id="btnClose2" style="width:100%;height:40px;">Ok</button>
+            </div>
+            <audio id="errorbeep" src="errorbeep.wav" preload="auto"></audio>
+        </form>
+    </div>
+    <!-- START_CUSTOM_CODE_formPutAwayUpdModel -->
+    <script>
+        var erroraudio = document.getElementById("errorbeep");
+        $("#win2").kendoWindow({
+            width: "300px",
+            height: "100px",
+            modal: true,
+            visible: false
+        });
+        $("#open1").click(function () {
+            $("#win2").data("kendoWindow").open();
+        });
+        $("#btnClose2").click(function () {
+            $("#win2").data("kendoWindow").close();
+            document.getElementById("shipmentbundle").value = "";
+            document.getElementById("shipmentbundle").focus();
+        });
+
+        /*var serviceURI = "http://spectre.int.syscom.plc.uk:8980/BoxContentsViewService",
+            catalogURI = serviceURI + "/static/BoxContentsViewService.json";*/
+        var serviceURI = "http://snowball.eveden.local:8980/WacoalWTLMobileService",
+            catalogURI = serviceURI + "/static/WacoalWTLMobileService.json";
+        var ccartondata;
+        var cshipmentdatabundle;
+        document.getElementById("shipmentbundle").value = gcShipmentNoForBundle;
+
+
+        document.getElementById('btnNext').onclick = function () {
+            if (gcShipmentNoForBundle == '') {
+                document.getElementById("shipmentbundle").focus();
+            } else {
+                kendo.mobile.application.navigate("components/ScanningBundles/choosecarton.html");
+            }
+        };
+
+        $(document).ready(function () {
+            $('#shipmentbundle').keypress(function (event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+
+                if (keycode == '13') {
+                    event.preventDefault();
+                    var getcarton = document.getElementById("shipmentbundle").value
+
+                    if (getcarton == '') {
+                        erroraudio.play();
+                        document.getElementById("errormsg2").value = "A Shipment must be entered";
+                        getcarton = "";
+                        $("#win2").data("kendoWindow").open();
+                    } else {
+                        getcarton = "";
+                        ShowShipmentDetails();
+                    }
+                }
+            });
+
+
+            function ShowShipmentDetails() {
+                /* var cshipno = document.getElementById("shipmentbundle").value;
+                 var cFilter = "where MfgShipment.EntityWip = '" + gcEntityWip + "'" + " and MfgShipment.MfgShipmentNo = '" + cshipno + "'";
+                 var shipresourceName = 'MfgShipment';
+                 cshipmentdatabundle = new JSDOTransport(serviceURI, catalogURI, shipresourceName, "", cFilter);
+                 cshipmentdatabundle.jsdo.subscribe('AfterFill', onAfterFillShipment, this);
+                 cshipmentdatabundle.jsdo.fill(cFilter);*/
+  
+                $.ajax({
+                        method: "POST",
+                        //url: "http://spectre.int.syscom.plc.uk:8980/mfgshipment/rest/mfgshipment/getshipmentdetails",
+                        url: csite + "/mfgshipment/rest/mfgshipment/getshipmentdetails",
+                        headers: {
+                            "accept": "application/json",
+                            "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        dataType: 'json',
+                        data: {
+                            "EntityWip": gcEntityWip,
+                            "ShipmentNo": document.getElementById("shipmentbundle").value
+                        },
+                        success: function (json) {
+
+                            //$("#grid1").data("kendoGrid").dataSource.data(testdata);
+
+                            console.log(json);
+                        },
+                        async: false,
+                        timeout: 1000,
+                        error: function (request, error) {
+                            if (error == "timeout") {
+                                //send request again
+                                $.ajax(this);
+                            } else {
+                                erroraudio.play();
+                                window.alert("Failed to reach server!");
+                                return false;
+                            }
+                        }
+                    })
+                    .done(function (response) {
+
+                        var recordcreated = (response.ttMfgShipment[0].RecordCreated);
+
+                        if (recordcreated == "N") {
+                            erroraudio.play();
+                            document.getElementById("errormsg2").value = "Shipment '" + document.getElementById("shipmentbundle").value + "' cannot be found";
+                            $("#win2").data("kendoWindow").open();
+
+                        } else {
+
+                            if ((response.ttMfgShipment[0].ContentsLocked) == true) {
+                                erroraudio.play();
+                                document.getElementById("errormsg2").value = "The Carton is assigned to a shipment that is flagged as contents locked";
+                                $("#win2").data("kendoWindow").open();
+                                document.getElementById("shipmentbundle").value = "";
+                            } else {
+                                gcNoCartons = (response.ttMfgShipment[0].NoCartonsInShip);
+                                gcNoBundles = (response.ttMfgShipment[0].NoBundles);
+                                gcNoItems = (response.ttMfgShipment[0].NoItemsInShip);
+                                gcShipmentNoForBundle = document.getElementById("shipmentbundle").value;
+                                document.getElementById("shipfrombundle").value = " " + (response.ttMfgShipment[0].ShipFrom);
+                                document.getElementById("shiptobundle").value = " " + (response.ttMfgShipment[0].ShipTo);
+                                document.getElementById("planshipbundle").value = " " + (response.ttMfgShipment[0].PlannedShipDate);
+                                document.getElementById("shipperbundle").value = " " + (response.ttMfgShipment[0].Shipper);
+                                document.getElementById("shiprefbundle").value = " " + (response.ttMfgShipment[0].ShipperReference);
+                                document.getElementById("commentsbundle").value = " " + (response.ttMfgShipment[0].Comment);
+                                document.getElementById("shipmentbundle").disabled = true;
+                            }
+                        }
+                    });
+            }
+
+            function onAfterFillShipment(jsdo, success, request) {
+                if (jsdo.hasData()) {
+                    jsdo.find(function (MfgShipment) {
+                        if (MfgShipment.data.ContentsLocked == true) {
+                            erroraudio.play();
+                            document.getElementById("errormsg2").value = "The Carton is assigned to a shipment that is flagged as contents locked";
+                            $("#win2").data("kendoWindow").open();
+                            document.getElementById("shipmentbundle").value = "";
+                        } else {
+                            gcNoCartons = MfgShipment.data.NoCartonsInShip;
+                            gcNoBundles = MfgShipment.data.NoBundles;
+                            gcNoItems = MfgShipment.data.NoItemsInShip;
+                            gcShipmentNoForBundle = document.getElementById("shipmentbundle").value;
+                            document.getElementById("shipfrombundle").value = " " + MfgShipment.data.ShipFrom;
+                            document.getElementById("shiptobundle").value = " " + MfgShipment.data.ShipTo;
+                            document.getElementById("planshipbundle").value = " " + MfgShipment.data.PlannedShipDate;
+                            document.getElementById("shipperbundle").value = " " + MfgShipment.data.Shipper;
+                            document.getElementById("shiprefbundle").value = " " + MfgShipment.data.ShipperReference;
+                            document.getElementById("commentsbundle").value = " " + MfgShipment.data.Comment;
+                            document.getElementById("shipmentbundle").disabled = true;
+                        }
+                    });
+                } else {
+                    erroraudio.play();
+                    document.getElementById("errormsg2").value = "Shipment '" + document.getElementById("shipmentbundle").value + "' cannot be found";
+                    $("#win2").data("kendoWindow").open();
+                }
+            }
+
+        });
+
+        function startup() {}
+
+        function afterstartup() {
+            document.getElementById("shipmentbundle").focus();
+            document.getElementById("shipmentbundle").value = gcShipmentNoForBundle;
+        }
+
+        function okclickedshipment() {
+            //document.getElementById("shipmentbundle").value = "";
+            document.getElementById("shipmentbundle").focus();
+        }
+
+        function okclickedcarton() {
+            //document.getElementById("cartonbundle").value = "";
+            document.getElementById("cartonbundle").focus();
+        }
+
+        function clickCancel() {
+            document.getElementById("shipmentbundle").value = '';
+            document.getElementById("shipfrombundle").value = '';
+            document.getElementById("shiptobundle").value = '';
+            document.getElementById("shipperbundle").value = '';
+            document.getElementById("shiprefbundle").value = '';
+            document.getElementById("planshipbundle").value = '';
+            document.getElementById("commentsbundle").value = '';
+            document.getElementById("shipmentbundle").disabled = false;
+            gcShipmentNoForBundle = '';
+            chashprog = "menu";
+            gcCartonSize = "";
+            kendo.mobile.application.navigate("components/menu/menu.html");
+        }
+    </script>
+    <!-- END_CUSTOM_CODE_formPutAwayUpdModel -->
+    <!-- START_CUSTOM_CODE_formPutAwayUpd -->
+    <!-- END_CUSTOM_CODE_formPutAwayUpd -->
+</div>
